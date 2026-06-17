@@ -5,7 +5,7 @@ import camp from "@/assets/about-camp.jpg";
 import hero from "@/assets/hero-savanna.jpg";
 import { safaris } from "@/lib/safaris-data";
 
-export const Route = createFileRoute("/safaris")({
+export const Route = createFileRoute("/safaris/")({
   head: () => ({
     meta: [
       { title: "Kenya Safari Packages — Pla2Ride Tours and Safaris" },
