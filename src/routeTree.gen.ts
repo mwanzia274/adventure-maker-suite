@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SafarisRouteImport } from './routes/safaris'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -26,6 +27,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SafarisRoute = SafarisRouteImport.update({
   id: '/safaris',
   path: '/safaris',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/destinations': typeof DestinationsRoute
   '/gallery': typeof GalleryRoute
+  '/reviews': typeof ReviewsRoute
   '/safaris': typeof SafarisRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/safaris/$slug': typeof SafarisSlugRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/destinations': typeof DestinationsRoute
   '/gallery': typeof GalleryRoute
+  '/reviews': typeof ReviewsRoute
   '/safaris': typeof SafarisRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/safaris/$slug': typeof SafarisSlugRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/destinations': typeof DestinationsRoute
   '/gallery': typeof GalleryRoute
+  '/reviews': typeof ReviewsRoute
   '/safaris': typeof SafarisRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/safaris/$slug': typeof SafarisSlugRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/destinations'
     | '/gallery'
+    | '/reviews'
     | '/safaris'
     | '/sitemap.xml'
     | '/safaris/$slug'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/destinations'
     | '/gallery'
+    | '/reviews'
     | '/safaris'
     | '/sitemap.xml'
     | '/safaris/$slug'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/destinations'
     | '/gallery'
+    | '/reviews'
     | '/safaris'
     | '/sitemap.xml'
     | '/safaris/$slug'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DestinationsRoute: typeof DestinationsRoute
   GalleryRoute: typeof GalleryRoute
+  ReviewsRoute: typeof ReviewsRoute
   SafarisRoute: typeof SafarisRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -147,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/safaris'
       fullPath: '/safaris'
       preLoaderRoute: typeof SafarisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -211,6 +231,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DestinationsRoute: DestinationsRoute,
   GalleryRoute: GalleryRoute,
+  ReviewsRoute: ReviewsRoute,
   SafarisRoute: SafarisRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
