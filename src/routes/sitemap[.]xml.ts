@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { safaris } from "@/lib/safaris-data";
 import type {} from "@tanstack/react-start";
 
 const BASE_URL = "";
@@ -7,7 +8,16 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const paths = ["/", "/safaris", "/destinations", "/gallery", "/about", "/contact"];
+        const paths = [
+          "/",
+          "/safaris",
+          "/destinations",
+          "/gallery",
+          "/reviews",
+          "/about",
+          "/contact",
+          ...safaris.map((s) => `/safaris/${s.slug}`),
+        ];
         const urls = paths
           .map((p) => `  <url><loc>${BASE_URL}${p}</loc><changefreq>weekly</changefreq></url>`)
           .join("\n");

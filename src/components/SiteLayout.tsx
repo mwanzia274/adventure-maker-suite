@@ -8,6 +8,7 @@ const nav = [
   { to: "/safaris", label: "Safaris" },
   { to: "/destinations", label: "Destinations" },
   { to: "/gallery", label: "Gallery" },
+  { to: "/reviews", label: "Reviews" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ] as const;
@@ -18,7 +19,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <div className="bg-brand-green-deep text-brand-gold-soft text-xs">
         <div className="mx-auto max-w-7xl px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="flex items-center gap-2"><Compass className="size-3.5" /> Locally owned · Expert guides · Tailor-made journeys</span>
+          <span className="flex items-center gap-2"><Compass className="size-3.5" /> Kenya owned · Expert local guides · Tailor-made safaris</span>
           <span className="hidden sm:flex items-center gap-4">
             <a href="tel:+254700000000" className="flex items-center gap-1.5 hover:text-white"><Phone className="size-3.5" /> +254 700 000 000</a>
             <a href="mailto:hello@pla2ride.com" className="flex items-center gap-1.5 hover:text-white"><Mail className="size-3.5" /> hello@pla2ride.com</a>
@@ -104,9 +105,18 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <p className="mt-6 max-w-md text-sm text-white/70 leading-relaxed">
-              We craft unforgettable East African journeys — from the great migration on the Serengeti
-              plains to sunrise over Kilimanjaro and dhow sails off Zanzibar.
+              A Kenya-based safari company crafting unforgettable journeys — from the Big Five on the
+              Masai Mara to Amboseli elephants beneath Kilimanjaro and dhow sails on the Diani coast.
             </p>
+            <div className="mt-6">
+              <div className="text-[10px] tracking-[0.3em] text-brand-gold font-semibold uppercase">Proud partners</div>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-white/80">
+                <span className="rounded-full border border-white/15 px-3 py-1">TripAdvisor</span>
+                <span className="rounded-full border border-white/15 px-3 py-1">Kenya Wildlife Service</span>
+                <span className="rounded-full border border-white/15 px-3 py-1">KATO Member</span>
+                <span className="rounded-full border border-white/15 px-3 py-1">Magical Kenya</span>
+              </div>
+            </div>
             <div className="mt-6 flex gap-3">
               <a href="#" aria-label="Instagram" className="size-10 grid place-items-center rounded-full border border-white/15 hover:bg-brand-gold hover:text-brand-green-deep transition"><Instagram className="size-4" /></a>
               <a href="#" aria-label="Facebook" className="size-10 grid place-items-center rounded-full border border-white/15 hover:bg-brand-gold hover:text-brand-green-deep transition"><Facebook className="size-4" /></a>
@@ -123,7 +133,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-widest text-brand-gold">Get in touch</h4>
             <ul className="mt-4 space-y-3 text-sm text-white/80">
-              <li className="flex gap-2"><MapPin className="size-4 text-brand-gold shrink-0 mt-0.5" /> Nairobi, Kenya · Arusha, Tanzania</li>
+              <li className="flex gap-2"><MapPin className="size-4 text-brand-gold shrink-0 mt-0.5" /> Karen Office Park, Nairobi, Kenya</li>
               <li className="flex gap-2"><Phone className="size-4 text-brand-gold shrink-0 mt-0.5" /> +254 700 000 000</li>
               <li className="flex gap-2"><Mail className="size-4 text-brand-gold shrink-0 mt-0.5" /> hello@pla2ride.com</li>
             </ul>

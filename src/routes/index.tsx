@@ -12,10 +12,10 @@ import lion from "@/assets/gallery-lion.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Pla2Ride Tours and Safaris — Authentic East African Adventures" },
-      { name: "description", content: "Tailor-made safaris and tours across Kenya, Tanzania, Uganda and Zanzibar. Game drives, Kilimanjaro treks, beach escapes and cultural journeys with expert local guides." },
-      { property: "og:title", content: "Pla2Ride Tours and Safaris" },
-      { property: "og:description", content: "Unforgettable East African journeys — built around you." },
+      { title: "Pla2Ride Tours and Safaris — Authentic Kenya Safari Adventures" },
+      { name: "description", content: "Tailor-made Kenya safaris from Nairobi — Masai Mara, Amboseli, Tsavo, Samburu, Mt Kenya and Diani beach. Crafted by expert local guides. 4.9★ on TripAdvisor." },
+      { property: "og:title", content: "Pla2Ride Tours and Safaris — Kenya" },
+      { property: "og:description", content: "Unforgettable Kenya safaris — built around you." },
       { property: "og:image", content: hero },
       { name: "twitter:image", content: hero },
     ],
@@ -31,17 +31,19 @@ const experiences = [
 ];
 
 const destinations = [
-  { slug: "serengeti", name: "Serengeti", country: "Tanzania", img: serengeti, tag: "Great Migration" },
   { slug: "masai-mara", name: "Maasai Mara", country: "Kenya", img: masai, tag: "Big Five" },
-  { slug: "kilimanjaro", name: "Kilimanjaro", country: "Tanzania", img: kilimanjaro, tag: "Roof of Africa" },
-  { slug: "zanzibar", name: "Zanzibar", country: "Tanzania", img: zanzibar, tag: "Spice Island" },
+  { slug: "amboseli", name: "Amboseli", country: "Kenya", img: kilimanjaro, tag: "Elephants & Kili" },
+  { slug: "samburu", name: "Samburu", country: "Kenya", img: serengeti, tag: "Wild North" },
+  { slug: "diani", name: "Diani", country: "Kenya Coast", img: zanzibar, tag: "Beach & Dhows" },
 ];
 
 const testimonials = [
-  { name: "Emma & James", from: "London, UK", quote: "From the moment we landed, every detail was handled. Our Mara guide spotted leopards twice in a single morning. Magical." },
-  { name: "Sofia M.", from: "Madrid, Spain", quote: "Pla2Ride built us a 14-day Kenya–Tanzania route that felt entirely ours. The camps, the food, the people — flawless." },
+  { name: "Emma & James", from: "London, UK", quote: "From the moment we landed at JKIA, every detail was handled. Our Mara guide spotted leopards twice in a single morning. Magical." },
+  { name: "Sofia M.", from: "Madrid, Spain", quote: "Pla2Ride built us an 8-day Kenya route that felt entirely ours. The camps, the food, the people — flawless." },
   { name: "The Chen Family", from: "Singapore", quote: "Travelling with two kids, we needed pros. They were patient, safety-first and made it the trip of our lives." },
 ];
+
+const partners = ["TripAdvisor", "Kenya Wildlife Service", "Kenya Association of Tour Operators", "Magical Kenya", "Ecotourism Kenya", "IATA"];
 
 function Index() {
   return (
@@ -59,8 +61,9 @@ function Index() {
               Where the wild <span className="italic text-brand-gold">writes</span> your story.
             </h1>
             <p className="mt-6 text-lg text-white/85 max-w-xl leading-relaxed">
-              Tailor-made safaris and tours across Kenya, Tanzania, Uganda and Zanzibar — crafted by
-              local guides who know every track, river crossing and starlit camp.
+              A Kenyan safari company based in Nairobi — tailor-made journeys through the Mara,
+              Amboseli, Tsavo, Samburu and the Diani coast, crafted by guides who know every track
+              and river crossing.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link to="/safaris" className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-semibold text-brand-green-deep shadow-gold hover:brightness-105 transition">
@@ -113,9 +116,9 @@ function Index() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div className="max-w-xl">
-              <div className="text-xs font-semibold tracking-[0.3em] text-brand-gold uppercase">Iconic Destinations</div>
+              <div className="text-xs font-semibold tracking-[0.3em] text-brand-gold uppercase">Iconic Kenya</div>
               <h2 className="mt-4 font-display text-4xl sm:text-5xl font-semibold text-brand-green-deep text-balance">
-                Four corners of East Africa.
+                Four corners of Kenya.
               </h2>
             </div>
             <Link to="/destinations" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green-deep hover:text-brand-gold">
@@ -208,6 +211,34 @@ function Index() {
                   <div className="text-white/60">{t.from}</div>
                 </figcaption>
               </figure>
+            ))}
+          </div>
+          <div className="mt-12 text-center">
+            <Link to="/reviews" className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-green-deep hover:brightness-105 transition">
+              Read all reviews · 4.9★ on TripAdvisor <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* PARTNERS */}
+      <section className="py-20 bg-background border-y border-border">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="text-center">
+            <div className="text-xs font-semibold tracking-[0.3em] text-brand-gold uppercase">Trusted partners</div>
+            <h2 className="mt-3 font-display text-3xl sm:text-4xl font-semibold text-brand-green-deep text-balance">
+              Accredited, licensed and recommended.
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-sm text-muted-foreground">
+              We work alongside Kenya's leading tourism and conservation bodies and are rated
+              Excellence on TripAdvisor for five years running.
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {partners.map((p) => (
+              <div key={p} className="aspect-[3/2] rounded-xl border border-border bg-brand-sand/40 grid place-items-center px-4 text-center">
+                <span className="font-display text-sm font-semibold text-brand-green-deep leading-tight">{p}</span>
+              </div>
             ))}
           </div>
         </div>
