@@ -16,6 +16,7 @@ import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SafarisSlugRouteImport } from './routes/safaris.$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -52,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SafarisSlugRoute = SafarisSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => SafarisRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,8 +65,9 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/destinations': typeof DestinationsRoute
   '/gallery': typeof GalleryRoute
-  '/safaris': typeof SafarisRoute
+  '/safaris': typeof SafarisRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/safaris/$slug': typeof SafarisSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,8 +75,9 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/destinations': typeof DestinationsRoute
   '/gallery': typeof GalleryRoute
-  '/safaris': typeof SafarisRoute
+  '/safaris': typeof SafarisRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/safaris/$slug': typeof SafarisSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +86,9 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/destinations': typeof DestinationsRoute
   '/gallery': typeof GalleryRoute
-  '/safaris': typeof SafarisRoute
+  '/safaris': typeof SafarisRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/safaris/$slug': typeof SafarisSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/safaris'
     | '/sitemap.xml'
+    | '/safaris/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/safaris'
     | '/sitemap.xml'
+    | '/safaris/$slug'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/safaris'
     | '/sitemap.xml'
+    | '/safaris/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,7 +129,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DestinationsRoute: typeof DestinationsRoute
   GalleryRoute: typeof GalleryRoute
-  SafarisRoute: typeof SafarisRoute
+  SafarisRoute: typeof SafarisRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -172,8 +184,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/safaris/$slug': {
+      id: '/safaris/$slug'
+      path: '/$slug'
+      fullPath: '/safaris/$slug'
+      preLoaderRoute: typeof SafarisSlugRouteImport
+      parentRoute: typeof SafarisRoute
+    }
   }
 }
+
+interface SafarisRouteChildren {
+  SafarisSlugRoute: typeof SafarisSlugRoute
+}
+
+const SafarisRouteChildren: SafarisRouteChildren = {
+  SafarisSlugRoute: SafarisSlugRoute,
+}
+
+const SafarisRouteWithChildren =
+  SafarisRoute._addFileChildren(SafarisRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -181,7 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DestinationsRoute: DestinationsRoute,
   GalleryRoute: GalleryRoute,
-  SafarisRoute: SafarisRoute,
+  SafarisRoute: SafarisRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

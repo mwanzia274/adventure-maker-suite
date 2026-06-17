@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
-import { getSafari, safaris } from "@/lib/safaris-data";
+import { getSafari, safaris, type Safari } from "@/lib/safaris-data";
 
 export const Route = createFileRoute("/safaris/$slug")({
   loader: ({ params }) => {
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/safaris/$slug")({
 });
 
 function SafariDetailPage() {
-  const { safari } = Route.useLoaderData();
+  const { safari } = Route.useLoaderData() as { safari: Safari };
   const others = safaris.filter((s) => s.slug !== safari.slug).slice(0, 3);
   return (
     <SiteLayout>
