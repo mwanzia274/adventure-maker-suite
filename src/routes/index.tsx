@@ -213,6 +213,34 @@ function Index() {
               </figure>
             ))}
           </div>
+          <div className="mt-12 text-center">
+            <Link to="/reviews" className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-green-deep hover:brightness-105 transition">
+              Read all reviews · 4.9★ on TripAdvisor <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* PARTNERS */}
+      <section className="py-20 bg-background border-y border-border">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="text-center">
+            <div className="text-xs font-semibold tracking-[0.3em] text-brand-gold uppercase">Trusted partners</div>
+            <h2 className="mt-3 font-display text-3xl sm:text-4xl font-semibold text-brand-green-deep text-balance">
+              Accredited, licensed and recommended.
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-sm text-muted-foreground">
+              We work alongside Kenya's leading tourism and conservation bodies and are rated
+              Excellence on TripAdvisor for five years running.
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {partners.map((p) => (
+              <div key={p} className="aspect-[3/2] rounded-xl border border-border bg-brand-sand/40 grid place-items-center px-4 text-center">
+                <span className="font-display text-sm font-semibold text-brand-green-deep leading-tight">{p}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
