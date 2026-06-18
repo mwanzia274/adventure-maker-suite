@@ -8,9 +8,9 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About — Pla2Ride Tours and Safaris" },
-      { name: "description", content: "Locally owned safari operator with 12+ years of experience crafting authentic East African journeys." },
+      { name: "description", content: "Pla2Ride Tours and Safaris is a Nairobi-based travel company offering personalised safari and tour experiences across East Africa." },
       { property: "og:title", content: "About — Pla2Ride Tours and Safaris" },
-      { property: "og:description", content: "Locally owned. Expertly guided. Built on respect." },
+      { property: "og:description", content: "Based in Nairobi, Kenya. Wildlife safaris, cultural tours, and custom travel packages across East Africa." },
       { property: "og:image", content: camp },
     ],
   }),
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/about")({
 });
 
 const values = [
-  { icon: Heart, title: "Locally rooted", text: "Born and based in East Africa, owned and run by the people who guide you." },
+  { icon: Heart, title: "Nairobi-based, locally rooted", text: "Headquartered in Nairobi, Kenya — owned and run by the people who guide you." },
   { icon: Leaf, title: "Low-impact travel", text: "We work only with camps that protect wildlife and reinvest in local communities." },
   { icon: Shield, title: "Safety as standard", text: "Fully licensed, insured, and trained for everything from game drives to summits." },
   { icon: Award, title: "Detail obsessed", text: "From the welcome drink to the airport farewell, every moment is choreographed." },
@@ -27,26 +27,25 @@ const values = [
 function AboutPage() {
   return (
     <SiteLayout>
-      <PageHero title="A safari company shaped by the people who guide it." subtitle="About us" image={maasai} />
+      <PageHero title="A Nairobi-based safari company shaped by the people who guide it." subtitle="About us · Nairobi, Kenya" image={maasai} />
 
       <section className="py-24">
         <div className="mx-auto max-w-5xl px-4">
           <div className="text-xs font-semibold tracking-[0.3em] text-brand-gold uppercase">Our story</div>
           <h2 className="mt-4 font-display text-4xl sm:text-5xl font-semibold text-brand-green-deep text-balance">
-            We grew up in this landscape. We've spent twelve years sharing it well.
+            Personalised safaris and tours across East Africa — based in Nairobi, Kenya.
           </h2>
           <div className="mt-10 grid md:grid-cols-2 gap-10 text-muted-foreground leading-relaxed">
             <p>
-              Pla2Ride Tours and Safaris was founded by a small team of Kenyan and Tanzanian guides who
-              were tired of seeing visitors hurried through the parks. We started with one Land
-              Cruiser, a hand-drawn map of the Mara and a stubborn belief that a proper safari needs
-              time, silence, and a guide who knows what to look for.
+              Pla2Ride Tours and Safaris is a travel company offering personalised safari and tour
+              experiences across East Africa. We specialise in wildlife safaris, cultural tours,
+              and custom travel packages tailored to different budgets and interests.
             </p>
             <p>
-              Today we run tailor-made journeys across Kenya, Tanzania, Uganda, Rwanda and Zanzibar.
-              We partner with eco-certified camps, train and employ locally, and donate a portion
-              of every trip to wildlife conservation. The road has been long, beautiful, and almost
-              always at first light.
+              With strong local expertise and a passion for travel, we deliver safe, seamless and
+              memorable journeys that showcase the region's natural beauty and rich heritage. Our
+              office is based in Nairobi, Kenya, and our team handles everything from day trips
+              around Nairobi to multi-country East African expeditions.
             </p>
           </div>
         </div>
