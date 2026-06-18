@@ -1,5 +1,6 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star } from "lucide-react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star, Calendar } from "lucide-react";
+import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { getSafari, safaris, type Safari } from "@/lib/safaris-data";
 
@@ -49,6 +50,24 @@ export const Route = createFileRoute("/safaris/$slug")({
 function SafariDetailPage() {
   const { safari } = Route.useLoaderData() as { safari: Safari };
   const others = safaris.filter((s) => s.slug !== safari.slug).slice(0, 3);
+  const navigate = useNavigate();
+  const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState("");
+  const [people, setPeople] = useState("2");
+  const [err, setErr] = useState<string | null>(null);
+
+  function handleBook(e: React.FormEvent) {
+    e.preventDefault();
+    if (!date) { setErr("Pick a travel date to continue."); return; }
+    if (date < today) { setErr("Travel date must be in the future."); return; }
+    const n = Number(people);
+    if (!Number.isFinite(n) || n < 1 || n > 30) { setErr("Travellers must be between 1 and 30."); return; }
+    setErr(null);
+    navigate({
+      to: "/contact",
+      search: { trip: safari.title, dates: date, people: `${n} ${n === 1 ? "traveller" : "travellers"}` },
+    });
+  }
   return (
     <SiteLayout>
       <section className="relative h-[68vh] min-h-[480px] flex items-end overflow-hidden">
