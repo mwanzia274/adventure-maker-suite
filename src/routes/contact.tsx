@@ -130,7 +130,7 @@ function ContactPage() {
                     <option>Custom Combination</option>
                   </Select>
                   <Field label="Travel dates" name="dates" placeholder="e.g. mid-September 2026" maxLength={120} />
-                  <Field label="Travellers" name="people" placeholder="e.g. 2 adults" maxLength={40} />
+                  <Field label="Travellers" name="people" placeholder="e.g. 2 adults" maxLength={40} defaultValue={search.people} />
                 </div>
                 <div>
                   <label htmlFor="message" className="text-sm font-medium text-foreground">Tell us about your dream trip</label>
