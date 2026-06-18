@@ -11,6 +11,8 @@ export type Safari = {
   slug: string;
   title: string;
   duration: string;
+  days: number;
+  category: "Day Trip" | "Short Safari" | "Classic Safari" | "Hiking" | "Beach" | "City Experience";
   group: string;
   location: string;
   price: string;
@@ -28,6 +30,8 @@ export const safaris: Safari[] = [
     slug: "masai-mara-classic",
     title: "Masai Mara Classic",
     duration: "4 Days",
+    days: 4,
+    category: "Classic Safari",
     group: "2–6 guests",
     location: "Masai Mara, Kenya",
     price: "from $1,290",
@@ -48,6 +52,8 @@ export const safaris: Safari[] = [
     slug: "amboseli-kili-views",
     title: "Amboseli & Kilimanjaro Views",
     duration: "3 Days",
+    days: 3,
+    category: "Short Safari",
     group: "2–6 guests",
     location: "Amboseli, Kenya",
     price: "from $890",
@@ -67,6 +73,8 @@ export const safaris: Safari[] = [
     slug: "tsavo-east-west",
     title: "Tsavo East & West Wilderness",
     duration: "4 Days",
+    days: 4,
+    category: "Classic Safari",
     group: "2–6 guests",
     location: "Tsavo, Kenya",
     price: "from $1,150",
@@ -87,6 +95,8 @@ export const safaris: Safari[] = [
     slug: "lake-nakuru-flamingos",
     title: "Lake Nakuru Flamingo Safari",
     duration: "2 Days",
+    days: 2,
+    category: "Short Safari",
     group: "2–6 guests",
     location: "Lake Nakuru, Kenya",
     price: "from $620",
@@ -105,6 +115,8 @@ export const safaris: Safari[] = [
     slug: "samburu-wilderness",
     title: "Samburu Wilderness",
     duration: "3 Days",
+    days: 3,
+    category: "Short Safari",
     group: "2–6 guests",
     location: "Samburu, Kenya",
     price: "from $1,090",
@@ -124,6 +136,8 @@ export const safaris: Safari[] = [
     slug: "big-five-grand-circuit",
     title: "Big Five Grand Circuit",
     duration: "8 Days",
+    days: 8,
+    category: "Classic Safari",
     group: "2–6 guests",
     location: "Amboseli · Nakuru · Mara, Kenya",
     price: "from $2,890",
@@ -148,6 +162,8 @@ export const safaris: Safari[] = [
     slug: "diani-coastal-escape",
     title: "Diani Beach Coastal Escape",
     duration: "5 Days",
+    days: 5,
+    category: "Beach",
     group: "2–8 guests",
     location: "Diani, Kenya Coast",
     price: "from $980",
@@ -169,6 +185,8 @@ export const safaris: Safari[] = [
     slug: "mt-kenya-trek",
     title: "Mount Kenya Sirimon Trek",
     duration: "5 Days",
+    days: 5,
+    category: "Hiking",
     group: "2–10 climbers",
     location: "Mount Kenya",
     price: "from $1,490",
