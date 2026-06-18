@@ -9,6 +9,8 @@ import { submitEnquiry } from "@/lib/enquiries.functions";
 
 const searchSchema = z.object({
   trip: z.string().optional(),
+  dates: z.string().optional(),
+  people: z.string().optional(),
 });
 
 export const Route = createFileRoute("/contact")({
