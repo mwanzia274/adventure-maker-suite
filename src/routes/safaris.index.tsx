@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, MapPin, Users, ArrowRight, Check, Search, SlidersHorizontal } from "lucide-react";
+import { Clock, MapPin, Users, ArrowRight, Check, Search, SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SiteLayout, PageHero, SectionHeader } from "@/components/SiteLayout";
 import camp from "@/assets/about-camp.jpg";
@@ -43,6 +43,12 @@ function SafarisPage() {
       return true;
     });
   }, [query, category, duration]);
+
+  const activeChips: { label: string; clear: () => void }[] = [];
+  if (query.trim()) activeChips.push({ label: `Search: "${query.trim()}"`, clear: () => setQuery("") });
+  if (category !== "All") activeChips.push({ label: category, clear: () => setCategory("All") });
+  if (duration !== 0) activeChips.push({ label: DURATIONS[duration].label, clear: () => setDuration(0) });
+  const resetAll = () => { setQuery(""); setCategory("All"); setDuration(0); };
 
   return (
     <SiteLayout>
@@ -107,6 +113,24 @@ function SafarisPage() {
                 Showing <strong className="text-brand-green-deep">{filtered.length}</strong> of {safaris.length} tours
               </span>
             </div>
+
+            {activeChips.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+                <span className="text-xs font-semibold uppercase tracking-widest text-brand-gold">Active</span>
+                {activeChips.map((chip) => (
+                  <button
+                    key={chip.label}
+                    onClick={chip.clear}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-brand-sand text-brand-green-deep text-xs font-semibold px-3 py-1.5 hover:bg-brand-gold/40 transition"
+                  >
+                    {chip.label} <X className="size-3" />
+                  </button>
+                ))}
+                <button onClick={resetAll} className="ml-1 text-xs font-semibold text-muted-foreground hover:text-brand-green-deep underline">
+                  Clear all
+                </button>
+              </div>
+            )}
           </div>
 
           {filtered.length === 0 ? (
