@@ -129,7 +129,7 @@ function ContactPage() {
                     <option>Cultural Tour</option>
                     <option>Custom Combination</option>
                   </Select>
-                  <Field label="Travel dates" name="dates" placeholder="e.g. mid-September 2026" maxLength={120} />
+                  <Field label="Travel dates" name="dates" placeholder="e.g. mid-September 2026" maxLength={120} defaultValue={search.dates} />
                   <Field label="Travellers" name="people" placeholder="e.g. 2 adults" maxLength={40} defaultValue={search.people} />
                 </div>
                 <div>
@@ -171,11 +171,11 @@ function ContactPage() {
   );
 }
 
-function Field({ label, name, type = "text", required, placeholder, maxLength }: { label: string; name: string; type?: string; required?: boolean; placeholder?: string; maxLength?: number }) {
+function Field({ label, name, type = "text", required, placeholder, maxLength, defaultValue }: { label: string; name: string; type?: string; required?: boolean; placeholder?: string; maxLength?: number; defaultValue?: string }) {
   return (
     <div>
       <label htmlFor={name} className="text-sm font-medium text-foreground">{label}</label>
-      <input id={name} name={name} type={type} required={required} placeholder={placeholder} maxLength={maxLength} className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold" />
+      <input id={name} name={name} type={type} required={required} placeholder={placeholder} maxLength={maxLength} defaultValue={defaultValue} className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold" />
     </div>
   );
 }
