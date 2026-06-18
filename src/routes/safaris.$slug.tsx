@@ -1,5 +1,6 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star } from "lucide-react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star, Calendar } from "lucide-react";
+import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { getSafari, safaris, type Safari } from "@/lib/safaris-data";
 
@@ -49,6 +50,24 @@ export const Route = createFileRoute("/safaris/$slug")({
 function SafariDetailPage() {
   const { safari } = Route.useLoaderData() as { safari: Safari };
   const others = safaris.filter((s) => s.slug !== safari.slug).slice(0, 3);
+  const navigate = useNavigate();
+  const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState("");
+  const [people, setPeople] = useState("2");
+  const [err, setErr] = useState<string | null>(null);
+
+  function handleBook(e: React.FormEvent) {
+    e.preventDefault();
+    if (!date) { setErr("Pick a travel date to continue."); return; }
+    if (date < today) { setErr("Travel date must be in the future."); return; }
+    const n = Number(people);
+    if (!Number.isFinite(n) || n < 1 || n > 30) { setErr("Travellers must be between 1 and 30."); return; }
+    setErr(null);
+    navigate({
+      to: "/contact",
+      search: { trip: safari.title, dates: date, people: `${n} ${n === 1 ? "traveller" : "travellers"}` },
+    });
+  }
   return (
     <SiteLayout>
       <section className="relative h-[68vh] min-h-[480px] flex items-end overflow-hidden">
@@ -118,23 +137,55 @@ function SafariDetailPage() {
               <p className="mt-3 text-sm text-muted-foreground">
                 Prices from <strong className="text-brand-green-deep">{safari.price}</strong> per person, sharing. Final quote depends on season, group size and camp choice.
               </p>
-              <ul className="mt-5 space-y-2 text-sm">
+              <div className="mt-4 flex flex-wrap gap-3 text-xs">
+                <span className="rounded-full bg-brand-sand px-3 py-1 font-semibold text-brand-green-deep flex items-center gap-1.5"><Clock className="size-3.5 text-brand-gold" />{safari.duration}</span>
+                <span className="rounded-full bg-brand-sand px-3 py-1 font-semibold text-brand-green-deep flex items-center gap-1.5">{safari.price}</span>
+              </div>
+
+              <form onSubmit={handleBook} className="mt-5 space-y-3">
+                <label className="block">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-brand-green-deep flex items-center gap-1.5"><Calendar className="size-3.5 text-brand-gold" /> Travel date</span>
+                  <input
+                    type="date"
+                    min={today}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:border-brand-gold"
+                    required
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-brand-green-deep flex items-center gap-1.5"><Users className="size-3.5 text-brand-gold" /> Travellers</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={people}
+                    onChange={(e) => setPeople(e.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:border-brand-gold"
+                    required
+                  />
+                </label>
+                {err && <p className="text-xs text-destructive">{err}</p>}
+                <button
+                  type="submit"
+                  className="inline-flex w-full justify-center items-center gap-2 rounded-full bg-brand-green px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-brand-green-deep transition"
+                >
+                  Book this safari <ArrowRight className="size-4" />
+                </button>
+              </form>
+
+              <div className="mt-6 text-xs font-semibold uppercase tracking-widest text-brand-gold">Trip highlights</div>
+              <ul className="mt-3 space-y-2 text-sm">
                 {safari.highlights.map((h) => (
                   <li key={h} className="flex gap-2"><Check className="size-4 text-brand-gold shrink-0 mt-0.5" />{h}</li>
                 ))}
               </ul>
-              <Link
-                to="/contact"
-                search={{ trip: safari.title }}
-                className="mt-6 inline-flex w-full justify-center items-center gap-2 rounded-full bg-brand-green px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-brand-green-deep transition"
-              >
-                Enquire about this safari <ArrowRight className="size-4" />
-              </Link>
               <a
                 href="https://wa.me/254700000000"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex w-full justify-center items-center gap-2 rounded-full border border-brand-green/30 px-6 py-3 text-sm font-semibold text-brand-green-deep hover:bg-brand-sand transition"
+                className="mt-4 inline-flex w-full justify-center items-center gap-2 rounded-full border border-brand-green/30 px-6 py-3 text-sm font-semibold text-brand-green-deep hover:bg-brand-sand transition"
               >
                 WhatsApp our trip designer
               </a>
