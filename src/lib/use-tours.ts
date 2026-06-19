@@ -53,7 +53,7 @@ export function useTours() {
         .eq("published", true)
         .order("sort_order");
       if (error) throw error;
-      const rows = (data ?? []) as DbTour[];
+      const rows = (data ?? []) as unknown as DbTour[];
       if (rows.length === 0) return safaris;
       return rows.map(dbToSafari);
     },
@@ -71,7 +71,7 @@ export function useTour(slug: string) {
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      if (data) return dbToSafari(data as DbTour);
+      if (data) return dbToSafari(data as unknown as DbTour);
       return safaris.find((s) => s.slug === slug) ?? null;
     },
     staleTime: 30_000,
