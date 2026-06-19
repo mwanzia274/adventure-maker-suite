@@ -7,13 +7,14 @@ import { useTour, useTours } from "@/lib/use-tours";
 
 export const Route = createFileRoute("/safaris/$slug")({
   loader: ({ params }) => {
-    const safari = getSafari(params.slug);
-    if (!safari) throw notFound();
-    return { safari };
+    // Use static safari for initial SSR data when available; otherwise leave
+    // empty and let the client-side useTour() fetch from the database.
+    const safari = getSafari(params.slug) ?? null;
+    return { safari, slug: params.slug };
   },
   head: ({ loaderData }) => {
     const s = loaderData?.safari;
-    if (!s) return { meta: [{ title: "Safari — Pla2Ride" }] };
+    if (!s) return { meta: [{ title: "Safari — Pla2Ride Kenya Safaris" }] };
     return {
       meta: [
         { title: `${s.title} (${s.duration}) — Pla2Ride Kenya Safaris` },
@@ -49,16 +50,37 @@ export const Route = createFileRoute("/safaris/$slug")({
 });
 
 function SafariDetailPage() {
-  const initial = Route.useLoaderData() as { safari: Safari };
-  const { data: live } = useTour(initial.safari.slug);
+  const initial = Route.useLoaderData() as { safari: Safari | null; slug: string };
+  const { data: live, isLoading } = useTour(initial.slug);
   const safari = live ?? initial.safari;
   const { data: all = safaris } = useTours();
-  const others = all.filter((s) => s.slug !== safari.slug).slice(0, 3);
+  const others = safari ? all.filter((s) => s.slug !== safari.slug).slice(0, 3) : [];
   const navigate = useNavigate();
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState("");
   const [people, setPeople] = useState("2");
   const [err, setErr] = useState<string | null>(null);
+
+  if (!safari) {
+    if (isLoading) {
+      return (
+        <SiteLayout>
+          <div className="mx-auto max-w-3xl px-4 py-32 text-center text-muted-foreground">Loading itinerary…</div>
+        </SiteLayout>
+      );
+    }
+    return (
+      <SiteLayout>
+        <div className="mx-auto max-w-3xl px-4 py-32 text-center">
+          <h1 className="font-display text-5xl text-brand-green-deep">Safari not found</h1>
+          <p className="mt-4 text-muted-foreground">That itinerary may have moved.</p>
+          <Link to="/safaris" className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-primary-foreground">
+            <ChevronLeft className="size-4" /> Back to all safaris
+          </Link>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   function handleBook(e: React.FormEvent) {
     e.preventDefault();
