@@ -3,6 +3,7 @@ import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star, Calendar
 import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { getSafari, safaris, type Safari } from "@/lib/safaris-data";
+import { useTour, useTours } from "@/lib/use-tours";
 
 export const Route = createFileRoute("/safaris/$slug")({
   loader: ({ params }) => {
@@ -48,8 +49,11 @@ export const Route = createFileRoute("/safaris/$slug")({
 });
 
 function SafariDetailPage() {
-  const { safari } = Route.useLoaderData() as { safari: Safari };
-  const others = safaris.filter((s) => s.slug !== safari.slug).slice(0, 3);
+  const initial = Route.useLoaderData() as { safari: Safari };
+  const { data: live } = useTour(initial.safari.slug);
+  const safari = live ?? initial.safari;
+  const { data: all = safaris } = useTours();
+  const others = all.filter((s) => s.slug !== safari.slug).slice(0, 3);
   const navigate = useNavigate();
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState("");
