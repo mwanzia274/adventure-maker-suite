@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { SiteLayout, PageHero, SectionHeader } from "@/components/SiteLayout";
 import camp from "@/assets/about-camp.jpg";
 import hero from "@/assets/hero-savanna.jpg";
-import { safaris } from "@/lib/safaris-data";
+import { useTours } from "@/lib/use-tours";
 
 export const Route = createFileRoute("/safaris/")({
   head: () => ({
@@ -32,6 +32,7 @@ function SafarisPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("All");
   const [duration, setDuration] = useState(0);
+  const { data: safaris = [], isLoading } = useTours();
 
   const filtered = useMemo(() => {
     const d = DURATIONS[duration];
@@ -42,7 +43,7 @@ function SafarisPage() {
       if (q && !(`${s.title} ${s.location} ${s.desc}`.toLowerCase().includes(q))) return false;
       return true;
     });
-  }, [query, category, duration]);
+  }, [query, category, duration, safaris]);
 
   const activeChips: { label: string; clear: () => void }[] = [];
   if (query.trim()) activeChips.push({ label: `Search: "${query.trim()}"`, clear: () => setQuery("") });

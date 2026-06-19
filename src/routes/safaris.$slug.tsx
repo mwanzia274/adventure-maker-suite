@@ -1,18 +1,20 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Clock, MapPin, Users, X, ChevronLeft, Star, Calendar } from "lucide-react";
 import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { getSafari, safaris, type Safari } from "@/lib/safaris-data";
+import { useTour, useTours } from "@/lib/use-tours";
 
 export const Route = createFileRoute("/safaris/$slug")({
   loader: ({ params }) => {
-    const safari = getSafari(params.slug);
-    if (!safari) throw notFound();
-    return { safari };
+    // Use static safari for initial SSR data when available; otherwise leave
+    // empty and let the client-side useTour() fetch from the database.
+    const safari = getSafari(params.slug) ?? null;
+    return { safari, slug: params.slug };
   },
   head: ({ loaderData }) => {
     const s = loaderData?.safari;
-    if (!s) return { meta: [{ title: "Safari — Pla2Ride" }] };
+    if (!s) return { meta: [{ title: "Safari — Pla2Ride Kenya Safaris" }] };
     return {
       meta: [
         { title: `${s.title} (${s.duration}) — Pla2Ride Kenya Safaris` },
@@ -48,16 +50,41 @@ export const Route = createFileRoute("/safaris/$slug")({
 });
 
 function SafariDetailPage() {
-  const { safari } = Route.useLoaderData() as { safari: Safari };
-  const others = safaris.filter((s) => s.slug !== safari.slug).slice(0, 3);
+  const initial = Route.useLoaderData() as { safari: Safari | null; slug: string };
+  const { data: live, isLoading } = useTour(initial.slug);
+  const safari = live ?? initial.safari;
+  const { data: all = safaris } = useTours();
+  const others = safari ? all.filter((s) => s.slug !== safari.slug).slice(0, 3) : [];
   const navigate = useNavigate();
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState("");
   const [people, setPeople] = useState("2");
   const [err, setErr] = useState<string | null>(null);
 
+  if (!safari) {
+    if (isLoading) {
+      return (
+        <SiteLayout>
+          <div className="mx-auto max-w-3xl px-4 py-32 text-center text-muted-foreground">Loading itinerary…</div>
+        </SiteLayout>
+      );
+    }
+    return (
+      <SiteLayout>
+        <div className="mx-auto max-w-3xl px-4 py-32 text-center">
+          <h1 className="font-display text-5xl text-brand-green-deep">Safari not found</h1>
+          <p className="mt-4 text-muted-foreground">That itinerary may have moved.</p>
+          <Link to="/safaris" className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-primary-foreground">
+            <ChevronLeft className="size-4" /> Back to all safaris
+          </Link>
+        </div>
+      </SiteLayout>
+    );
+  }
+
   function handleBook(e: React.FormEvent) {
     e.preventDefault();
+    if (!safari) return;
     if (!date) { setErr("Pick a travel date to continue."); return; }
     if (date < today) { setErr("Travel date must be in the future."); return; }
     const n = Number(people);

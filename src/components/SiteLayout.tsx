@@ -142,7 +142,10 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         <div className="border-t border-white/10">
           <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col sm:flex-row justify-between gap-2 text-xs text-white/60">
             <span>© {new Date().getFullYear()} Pla2Ride Tours and Safaris. All rights reserved.</span>
-            <span>Crafted with care in East Africa.</span>
+            <span className="flex items-center gap-3">
+              Crafted with care in East Africa.
+              <Link to="/auth" className="hover:text-brand-gold">Admin</Link>
+            </span>
           </div>
         </div>
       </footer>
