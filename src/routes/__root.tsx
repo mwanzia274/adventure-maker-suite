@@ -80,10 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Pla2Ride Tours and Safaris — Authentic African Adventures" },
       { name: "description", content: "Tailor-made safaris across Kenya, Tanzania, Uganda and Zanzibar. Game drives, Kilimanjaro treks, beach escapes, cultural tours — led by expert local guides." },
       { name: "author", content: "Pla2Ride Tours and Safaris" },
-      { property: "og:title", content: "Pla2Ride Tours and Safaris" },
-      { property: "og:description", content: "Authentic, expertly-guided African safari journeys. Build your dream trip with Pla2Ride." },
+      { property: "og:title", content: "Pla2Ride Tours and Safaris — Authentic African Adventures" },
+      { property: "og:description", content: "Tailor-made safaris across Kenya, Tanzania, Uganda and Zanzibar. Game drives, Kilimanjaro treks, beach escapes, cultural tours — led by expert local guides." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Pla2Ride Tours and Safaris — Authentic African Adventures" },
+      { name: "twitter:description", content: "Tailor-made safaris across Kenya, Tanzania, Uganda and Zanzibar. Game drives, Kilimanjaro treks, beach escapes, cultural tours — led by expert local guides." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3ecc1dd4-1487-41fd-bde6-8b0e2806c54e/id-preview-1c9e04d7--c8f43ba7-a419-4ade-ac01-997ff2814c61.lovable.app-1781848784378.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3ecc1dd4-1487-41fd-bde6-8b0e2806c54e/id-preview-1c9e04d7--c8f43ba7-a419-4ade-ac01-997ff2814c61.lovable.app-1781848784378.png" },
     ],
     links: [
       {
