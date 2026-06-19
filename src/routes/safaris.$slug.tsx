@@ -84,6 +84,7 @@ function SafariDetailPage() {
 
   function handleBook(e: React.FormEvent) {
     e.preventDefault();
+    if (!safari) return;
     if (!date) { setErr("Pick a travel date to continue."); return; }
     if (date < today) { setErr("Travel date must be in the future."); return; }
     const n = Number(people);
