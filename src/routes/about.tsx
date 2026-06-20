@@ -44,8 +44,8 @@ function AboutPage() {
             <p>
               With strong local expertise and a passion for travel, we deliver safe, seamless and
               memorable journeys that showcase the region's natural beauty and rich heritage. Our
-              office is based in Nairobi, Kenya, and our team handles everything from day trips
-              around Nairobi to multi-country East African expeditions.
+              office is based in Nairobi, Kenya, and our team has been crafting trips since 2018 —
+              from day trips around Nairobi to multi-country East African expeditions.
             </p>
           </div>
         </div>
@@ -69,8 +69,8 @@ function AboutPage() {
       <section className="py-24">
         <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-4 gap-8 text-center">
           {[
-            { n: "12+", l: "Years operating" },
-            { n: "1,800", l: "Guests guided" },
+            { n: "Since 2018", l: "Operating from Nairobi" },
+            { n: "1,800+", l: "Guests guided" },
             { n: "27", l: "Local team members" },
             { n: "4.9★", l: "Average rating" },
           ].map((s) => (
