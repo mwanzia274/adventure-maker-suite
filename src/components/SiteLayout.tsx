@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, X, Phone, Mail, MapPin, Instagram, Facebook, Compass } from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin, Instagram, Facebook, Compass, MessageCircle } from "lucide-react";
 import logo from "@/assets/logo.asset.json";
 
 const nav = [
@@ -21,8 +21,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-7xl px-4 py-2 flex flex-wrap items-center justify-between gap-2">
           <span className="flex items-center gap-2"><Compass className="size-3.5" /> Kenya owned · Expert local guides · Tailor-made safaris</span>
           <span className="hidden sm:flex items-center gap-4">
-            <a href="tel:+254700000000" className="flex items-center gap-1.5 hover:text-white"><Phone className="size-3.5" /> +254 700 000 000</a>
-            <a href="mailto:hello@pla2ride.com" className="flex items-center gap-1.5 hover:text-white"><Mail className="size-3.5" /> hello@pla2ride.com</a>
+            <a href="https://wa.me/254723349496" target="_blank" rel="noopener" className="flex items-center gap-1.5 hover:text-white"><MessageCircle className="size-3.5" /> 0723 349 496</a>
+            <a href="tel:+254787186615" className="flex items-center gap-1.5 hover:text-white"><Phone className="size-3.5" /> 0787 186 615</a>
+            <a href="mailto:pla2ridesafaris@gmail.com" className="flex items-center gap-1.5 hover:text-white"><Mail className="size-3.5" /> pla2ridesafaris@gmail.com</a>
           </span>
         </div>
       </div>
@@ -94,6 +95,19 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
+      <a
+        href="https://wa.me/254723349496"
+        target="_blank"
+        rel="noopener"
+        aria-label="Chat on WhatsApp: 0723 349 496"
+        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-[#25D366] text-white px-4 py-3 shadow-lg hover:scale-105 transition"
+      >
+        <svg viewBox="0 0 24 24" className="size-6 fill-current" aria-hidden="true">
+          <path d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .17 5.31.17 11.87c0 2.09.55 4.13 1.6 5.93L0 24l6.36-1.67a11.84 11.84 0 0 0 5.68 1.45h.01c6.55 0 11.87-5.31 11.87-11.87 0-3.17-1.24-6.15-3.4-8.43ZM12.04 21.5h-.01a9.6 9.6 0 0 1-4.89-1.34l-.35-.21-3.78.99 1.01-3.68-.23-.38a9.59 9.59 0 0 1-1.47-5.06c0-5.31 4.32-9.63 9.63-9.63 2.57 0 4.99 1 6.81 2.82a9.55 9.55 0 0 1 2.82 6.82c0 5.31-4.32 9.62-9.63 9.62Zm5.28-7.21c-.29-.15-1.71-.85-1.97-.94-.27-.1-.46-.15-.65.14-.19.29-.74.94-.91 1.13-.17.19-.34.21-.62.07-.29-.14-1.22-.45-2.32-1.44-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.59.13-.13.29-.34.43-.51.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.51-.07-.14-.65-1.57-.9-2.15-.24-.57-.48-.49-.65-.5-.17-.01-.36-.01-.55-.01-.19 0-.51.07-.78.36-.27.29-1.02 1-1.02 2.43s1.04 2.82 1.18 3.02c.14.19 2.04 3.12 4.95 4.37.69.3 1.23.48 1.65.61.69.22 1.32.19 1.82.12.55-.08 1.71-.7 1.95-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.34Z" />
+        </svg>
+        <span className="hidden sm:inline text-sm font-semibold">WhatsApp</span>
+      </a>
+
       <footer className="mt-24 bg-savanna text-primary-foreground">
         <div className="mx-auto max-w-7xl px-4 py-16 grid gap-12 md:grid-cols-4">
           <div className="md:col-span-2">
@@ -105,8 +119,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <p className="mt-6 max-w-md text-sm text-white/70 leading-relaxed">
-              A Kenya-based safari company crafting unforgettable journeys — from the Big Five on the
-              Masai Mara to Amboseli elephants beneath Kilimanjaro and dhow sails on the Diani coast.
+              A Nairobi, Kenya-based safari company crafting unforgettable journeys since 2018 — from
+              the Big Five on the Masai Mara to Amboseli elephants beneath Kilimanjaro and dhow sails
+              on the Diani coast.
             </p>
             <div className="mt-6">
               <div className="text-[10px] tracking-[0.3em] text-brand-gold font-semibold uppercase">Proud partners</div>
@@ -133,15 +148,16 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-widest text-brand-gold">Get in touch</h4>
             <ul className="mt-4 space-y-3 text-sm text-white/80">
-              <li className="flex gap-2"><MapPin className="size-4 text-brand-gold shrink-0 mt-0.5" /> Karen Office Park, Nairobi, Kenya</li>
-              <li className="flex gap-2"><Phone className="size-4 text-brand-gold shrink-0 mt-0.5" /> +254 700 000 000</li>
-              <li className="flex gap-2"><Mail className="size-4 text-brand-gold shrink-0 mt-0.5" /> hello@pla2ride.com</li>
+              <li className="flex gap-2"><MapPin className="size-4 text-brand-gold shrink-0 mt-0.5" /> Nairobi, Kenya</li>
+              <li className="flex gap-2"><a href="https://wa.me/254723349496" target="_blank" rel="noopener" className="flex gap-2 hover:text-brand-gold"><MessageCircle className="size-4 text-brand-gold shrink-0 mt-0.5" /> 0723 349 496 (WhatsApp)</a></li>
+              <li className="flex gap-2"><a href="tel:+254787186615" className="flex gap-2 hover:text-brand-gold"><Phone className="size-4 text-brand-gold shrink-0 mt-0.5" /> 0787 186 615</a></li>
+              <li className="flex gap-2"><a href="mailto:pla2ridesafaris@gmail.com" className="flex gap-2 hover:text-brand-gold"><Mail className="size-4 text-brand-gold shrink-0 mt-0.5" /> pla2ridesafaris@gmail.com</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-white/10">
           <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col sm:flex-row justify-between gap-2 text-xs text-white/60">
-            <span>© {new Date().getFullYear()} Pla2Ride Tours and Safaris. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Pla2Ride Tours and Safaris · Operating since 2018. All rights reserved.</span>
             <span className="flex items-center gap-3">
               Crafted with care in East Africa.
               <Link to="/auth" className="hover:text-brand-gold">Admin</Link>
