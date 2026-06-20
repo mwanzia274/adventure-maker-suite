@@ -13,6 +13,19 @@ const searchSchema = z.object({
   people: z.string().optional(),
 });
 
+const enquirySchema = z.object({
+  name: z.string().trim().min(2, "Please enter your full name").max(100, "Name is too long"),
+  email: z.string().trim().email("Enter a valid email address").max(255),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Enter a valid phone number")
+    .max(40, "Phone number is too long")
+    .regex(/^[+0-9 ()\-]+$/, "Phone can only contain digits, spaces, +, -, ()"),
+  message: z.string().trim().min(10, "Please tell us a little more (at least 10 characters)").max(2000, "Message is too long"),
+});
+type FieldErrors = Partial<Record<"name" | "email" | "phone" | "message", string>>;
+
 export const Route = createFileRoute("/contact")({
   validateSearch: searchSchema,
   head: () => ({
@@ -33,10 +46,10 @@ function ContactPage() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [reference, setReference] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("sending");
     setError(null);
     const fd = new FormData(e.currentTarget);
     const payload = {
@@ -49,6 +62,21 @@ function ContactPage() {
       message: String(fd.get("message") ?? ""),
       safari: String(fd.get("safari") ?? ""),
     };
+    const parsed = enquirySchema.safeParse({
+      name: payload.name, email: payload.email, phone: payload.phone, message: payload.message,
+    });
+    if (!parsed.success) {
+      const next: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof FieldErrors;
+        if (key && !next[key]) next[key] = issue.message;
+      }
+      setFieldErrors(next);
+      setStatus("idle");
+      return;
+    }
+    setFieldErrors({});
+    setStatus("sending");
     try {
       const result = await send({ data: payload });
       setReference(result.reference);
@@ -124,9 +152,9 @@ function ContactPage() {
                   </div>
                 )}
                 <div className="grid sm:grid-cols-2 gap-5">
-                  <Field label="Full name" name="name" required maxLength={100} />
-                  <Field label="Email" name="email" type="email" required maxLength={255} />
-                  <Field label="Phone (optional)" name="phone" maxLength={40} />
+                  <Field label="Full name" name="name" required maxLength={100} error={fieldErrors.name} />
+                  <Field label="Email" name="email" type="email" required maxLength={255} error={fieldErrors.email} />
+                  <Field label="Phone" name="phone" type="tel" required maxLength={40} placeholder="+254 712 345 678" error={fieldErrors.phone} />
                   <Select label="Trip type" name="trip" defaultValue={search.trip}>
                     <option>Wildlife Safari</option>
                     <option>Mountain Trek</option>
@@ -145,9 +173,13 @@ function ContactPage() {
                     required
                     rows={5}
                     maxLength={2000}
-                    className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                    aria-invalid={!!fieldErrors.message}
+                    className={`mt-2 w-full rounded-lg border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold ${fieldErrors.message ? "border-destructive" : "border-border"}`}
                     placeholder="Where in Kenya you want to go, what you want to see, anything special..."
                   />
+                  {fieldErrors.message && (
+                    <p className="mt-1.5 text-xs text-destructive flex items-center gap-1"><AlertCircle className="size-3" /> {fieldErrors.message}</p>
+                  )}
                 </div>
                 {status === "error" && error && (
                   <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -155,17 +187,27 @@ function ContactPage() {
                     <span>{error}</span>
                   </div>
                 )}
-                <button
-                  type="submit"
-                  disabled={status === "sending"}
-                  className="inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-brand-green-deep transition disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {status === "sending" ? (
-                    <>Sending… <Loader2 className="size-4 animate-spin" /></>
-                  ) : (
-                    <>Send enquiry <Send className="size-4" /></>
-                  )}
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={status === "sending"}
+                    className="inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-brand-green-deep transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {status === "sending" ? (
+                      <>Sending… <Loader2 className="size-4 animate-spin" /></>
+                    ) : (
+                      <>Send enquiry <Send className="size-4" /></>
+                    )}
+                  </button>
+                  <a
+                    href="https://wa.me/254723349496?text=Hi%20Pla2Ride%2C%20I%27d%20like%20to%20plan%20a%20safari."
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3.5 text-sm font-semibold text-white hover:brightness-95 transition"
+                  >
+                    <MessageCircle className="size-4" /> Chat on WhatsApp
+                  </a>
+                </div>
                 <p className="text-xs text-muted-foreground">No spam. We'll only use this to plan your trip.</p>
               </form>
             )}
@@ -176,11 +218,22 @@ function ContactPage() {
   );
 }
 
-function Field({ label, name, type = "text", required, placeholder, maxLength, defaultValue }: { label: string; name: string; type?: string; required?: boolean; placeholder?: string; maxLength?: number; defaultValue?: string }) {
+function Field({ label, name, type = "text", required, placeholder, maxLength, defaultValue, error }: { label: string; name: string; type?: string; required?: boolean; placeholder?: string; maxLength?: number; defaultValue?: string; error?: string }) {
   return (
     <div>
-      <label htmlFor={name} className="text-sm font-medium text-foreground">{label}</label>
-      <input id={name} name={name} type={type} required={required} placeholder={placeholder} maxLength={maxLength} defaultValue={defaultValue} className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold" />
+      <label htmlFor={name} className="text-sm font-medium text-foreground">{label}{required && <span className="text-destructive"> *</span>}</label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        required={required}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        defaultValue={defaultValue}
+        aria-invalid={!!error}
+        className={`mt-2 w-full rounded-lg border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold ${error ? "border-destructive" : "border-border"}`}
+      />
+      {error && <p className="mt-1.5 text-xs text-destructive flex items-center gap-1"><AlertCircle className="size-3" /> {error}</p>}
     </div>
   );
 }

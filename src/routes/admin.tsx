@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, LayoutDashboard, Mail, MapPinned, Star, Image as ImageIcon,
   Plus, Pencil, Trash2, Loader2, Check, X as XIcon, ExternalLink, Database, Upload, Search,
+  ArrowUp, ArrowDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
@@ -292,6 +293,24 @@ function ToursPanel() {
     qc.invalidateQueries({ queryKey: ["admin-tours"] });
     qc.invalidateQueries({ queryKey: ["public-tours"] });
   }
+  async function move(t: TourRow, direction: -1 | 1) {
+    const list = [...(data ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+    const idx = list.findIndex((x) => x.id === t.id);
+    const swapIdx = idx + direction;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= list.length) return;
+    const other = list[swapIdx];
+    const a = t.sort_order;
+    const b = other.sort_order;
+    // If equal, force distinct values to enable a swap.
+    const newA = a === b ? b + direction : b;
+    const newB = a === b ? a : a;
+    await Promise.all([
+      supabase.from("tours").update({ sort_order: newA }).eq("id", t.id),
+      supabase.from("tours").update({ sort_order: newB }).eq("id", other.id),
+    ]);
+    qc.invalidateQueries({ queryKey: ["admin-tours"] });
+    qc.invalidateQueries({ queryKey: ["public-tours"] });
+  }
 
   return (
     <Panel
@@ -326,9 +345,9 @@ function ToursPanel() {
         <Empty text={`No tours match "${query}".`} />
       ) : (
         <div className="grid gap-3">
-          {filtered.map((t) => (
+          {filtered.map((t, i) => (
             <div key={t.id} className="flex items-center gap-4 p-3 border border-border rounded-xl bg-background">
-              {t.img && <img src={t.img} alt="" className="size-16 rounded-lg object-cover" />}
+              {t.img && <img src={t.img} alt={t.title} className="size-16 rounded-lg object-cover" />}
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-brand-green-deep">{t.title}</span>
@@ -338,6 +357,16 @@ function ToursPanel() {
                 <div className="text-xs text-muted-foreground mt-1">{t.duration} · {t.location} · {t.price}</div>
               </div>
               <div className="flex items-center gap-1">
+                {!query.trim() && (
+                  <div className="flex flex-col mr-1">
+                    <button onClick={() => move(t, -1)} disabled={i === 0} title="Move up" className="p-1 rounded hover:bg-brand-sand text-brand-green-deep disabled:opacity-30 disabled:cursor-not-allowed">
+                      <ArrowUp className="size-3.5" />
+                    </button>
+                    <button onClick={() => move(t, 1)} disabled={i === filtered.length - 1} title="Move down" className="p-1 rounded hover:bg-brand-sand text-brand-green-deep disabled:opacity-30 disabled:cursor-not-allowed">
+                      <ArrowDown className="size-3.5" />
+                    </button>
+                  </div>
+                )}
                 <button onClick={() => togglePublished(t)} title={t.published ? "Hide" : "Publish"} className="p-2 rounded-md hover:bg-brand-sand text-brand-green-deep">
                   {t.published ? <Check className="size-4" /> : <XIcon className="size-4" />}
                 </button>
@@ -628,7 +657,7 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
       <div className="flex items-start gap-4">
         <div className="size-24 rounded-lg overflow-hidden bg-brand-sand grid place-items-center border border-border shrink-0">
           {value ? (
-            <img src={value} alt="" className="w-full h-full object-cover" />
+            <img src={value} alt="Image preview" className="w-full h-full object-cover" />
           ) : (
             <ImageIcon className="size-6 text-muted-foreground" />
           )}
