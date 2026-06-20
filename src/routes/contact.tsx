@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type ReactNode } from "react";
 import { z } from "zod";
-import { Phone, Mail, MapPin, Clock, Send, Check, Loader2, AlertCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, Check, Loader2, AlertCircle, MessageCircle } from "lucide-react";
 import { SiteLayout, PageHero } from "@/components/SiteLayout";
 import zanzibar from "@/assets/dest-zanzibar.jpg";
 import { submitEnquiry } from "@/lib/enquiries.functions";
@@ -78,10 +78,11 @@ function ContactPage() {
             </div>
             <ul className="space-y-5">
               {[
-                { i: Phone, l: "+254 700 000 000", s: "Phone & WhatsApp" },
-                { i: Mail, l: "hello@pla2ride.com", s: "Email" },
-                { i: MapPin, l: "Karen Office Park, Nairobi, Kenya", s: "Office" },
-                { i: Clock, l: "Mon–Sun, 7am–9pm EAT", s: "Hours" },
+                { i: MessageCircle, l: "0723 349 496", s: "WhatsApp", href: "https://wa.me/254723349496" },
+                { i: Phone, l: "0787 186 615", s: "Phone", href: "tel:+254787186615" },
+                { i: Mail, l: "pla2ridesafaris@gmail.com", s: "Email", href: "mailto:pla2ridesafaris@gmail.com" },
+                { i: MapPin, l: "Nairobi, Kenya", s: "Office" },
+                { i: Clock, l: "Operating since 2018 · Mon–Sun, 7am–9pm EAT", s: "Hours" },
               ].map((c) => (
                 <li key={c.s} className="flex gap-4">
                   <div className="size-11 shrink-0 rounded-full bg-brand-sand grid place-items-center text-brand-green-deep">
@@ -89,7 +90,11 @@ function ContactPage() {
                   </div>
                   <div>
                     <div className="text-xs uppercase tracking-widest text-brand-gold font-semibold">{c.s}</div>
-                    <div className="mt-0.5 font-medium text-foreground">{c.l}</div>
+                    {c.href ? (
+                      <a href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel="noopener" className="mt-0.5 font-medium text-foreground hover:text-brand-green-deep">{c.l}</a>
+                    ) : (
+                      <div className="mt-0.5 font-medium text-foreground">{c.l}</div>
+                    )}
                   </div>
                 </li>
               ))}
