@@ -783,7 +783,10 @@ function GalleryPanel() {
         <div className="mb-6 p-4 border border-border rounded-xl bg-background grid sm:grid-cols-2 gap-3">
           <In label="Title" value={form.title} onChange={(v) => setForm({ ...form, title: v })} />
           <In label="Caption" value={form.caption} onChange={(v) => setForm({ ...form, caption: v })} />
-          <div className="sm:col-span-2"><In label="Image URL" value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} /></div>
+          <div className="sm:col-span-2">
+            <Lbl>Image</Lbl>
+            <ImageUploader value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} pathPrefix="gallery" />
+          </div>
           <In label="Sort order" type="number" value={String(form.sort_order)} onChange={(v) => setForm({ ...form, sort_order: Number(v) })} />
           <div className="sm:col-span-2 flex gap-2 justify-end">
             <button onClick={() => setAdding(false)} className="rounded-full border border-border px-4 py-2 text-sm">Cancel</button>
