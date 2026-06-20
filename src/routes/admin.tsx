@@ -366,6 +366,19 @@ function ToursPanel() {
 
 function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose: () => void; onSaved: () => void }) {
   const isEdit = !!tour;
+  const asStringArray = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x) => typeof x === "string") as string[] : [];
+  const asItinerary = (v: unknown): { day: number; title: string; text: string }[] =>
+    Array.isArray(v)
+      ? v.map((x, i) => {
+          const o = (x ?? {}) as Record<string, unknown>;
+          return {
+            day: typeof o.day === "number" ? o.day : i + 1,
+            title: typeof o.title === "string" ? o.title : "",
+            text: typeof o.text === "string" ? o.text : "",
+          };
+        })
+      : [];
   const [form, setForm] = useState(() => ({
     slug: tour?.slug ?? "",
     title: tour?.title ?? "",
@@ -378,10 +391,10 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
     img: tour?.img ?? "",
     short_desc: tour?.short_desc ?? "",
     long_desc: tour?.long_desc ?? "",
-    highlights: JSON.stringify(tour?.highlights ?? [], null, 2),
-    includes: JSON.stringify(tour?.includes ?? [], null, 2),
-    excludes: JSON.stringify(tour?.excludes ?? [], null, 2),
-    itinerary: JSON.stringify(tour?.itinerary ?? [], null, 2),
+    highlights: asStringArray(tour?.highlights),
+    includes: asStringArray(tour?.includes),
+    excludes: asStringArray(tour?.excludes),
+    itinerary: asItinerary(tour?.itinerary),
     published: tour?.published ?? true,
     sort_order: tour?.sort_order ?? 0,
   }));
@@ -392,15 +405,12 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
     setErr(null);
     setSaving(true);
     try {
-      let highlights, includes, excludes, itinerary;
-      try {
-        highlights = JSON.parse(form.highlights || "[]");
-        includes = JSON.parse(form.includes || "[]");
-        excludes = JSON.parse(form.excludes || "[]");
-        itinerary = JSON.parse(form.itinerary || "[]");
-      } catch {
-        throw new Error("Highlights/Includes/Excludes/Itinerary must be valid JSON.");
-      }
+      const highlights = form.highlights.map((s) => s.trim()).filter(Boolean);
+      const includes = form.includes.map((s) => s.trim()).filter(Boolean);
+      const excludes = form.excludes.map((s) => s.trim()).filter(Boolean);
+      const itinerary = form.itinerary
+        .map((it, i) => ({ day: Number(it.day) || i + 1, title: it.title.trim(), text: it.text.trim() }))
+        .filter((it) => it.title || it.text);
       const payload = { ...form, days: Number(form.days), sort_order: Number(form.sort_order), highlights, includes, excludes, itinerary };
       if (isEdit && tour) {
         const { error } = await supabase.from("tours").update(payload).eq("id", tour.id);
@@ -433,7 +443,10 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
           <In label="Group size" value={form.group_size} onChange={(v) => setForm({ ...form, group_size: v })} />
           <In label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
           <In label="Price" value={form.price} onChange={(v) => setForm({ ...form, price: v })} />
-          <div className="sm:col-span-2"><In label="Image URL" value={form.img} onChange={(v) => setForm({ ...form, img: v })} /></div>
+          <div className="sm:col-span-2">
+            <Lbl>Cover image</Lbl>
+            <ImageUploader value={form.img} onChange={(v) => setForm({ ...form, img: v })} pathPrefix="tours" />
+          </div>
           <div className="sm:col-span-2">
             <Lbl>Short description</Lbl>
             <textarea value={form.short_desc} onChange={(e) => setForm({ ...form, short_desc: e.target.value })} rows={2} className={inputCls} />
@@ -442,13 +455,28 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
             <Lbl>Long description</Lbl>
             <textarea value={form.long_desc} onChange={(e) => setForm({ ...form, long_desc: e.target.value })} rows={3} className={inputCls} />
           </div>
-          <JsonField label='Highlights (JSON array of strings)' value={form.highlights} onChange={(v) => setForm({ ...form, highlights: v })} />
-          <JsonField label='Includes (JSON array of strings)' value={form.includes} onChange={(v) => setForm({ ...form, includes: v })} />
-          <JsonField label='Excludes (JSON array of strings)' value={form.excludes} onChange={(v) => setForm({ ...form, excludes: v })} />
-          <div className="sm:col-span-2">
-            <Lbl>Itinerary (JSON array of {`{day,title,text}`})</Lbl>
-            <textarea value={form.itinerary} onChange={(e) => setForm({ ...form, itinerary: e.target.value })} rows={6} className={`${inputCls} font-mono text-xs`} />
-          </div>
+          <StringList
+            label="Highlights"
+            placeholder="e.g. Sundowner on the Mara"
+            items={form.highlights}
+            onChange={(items) => setForm({ ...form, highlights: items })}
+          />
+          <StringList
+            label="What's included"
+            placeholder="e.g. Park fees, all meals"
+            items={form.includes}
+            onChange={(items) => setForm({ ...form, includes: items })}
+          />
+          <StringList
+            label="What's not included"
+            placeholder="e.g. International flights"
+            items={form.excludes}
+            onChange={(items) => setForm({ ...form, excludes: items })}
+          />
+          <ItineraryList
+            items={form.itinerary}
+            onChange={(items) => setForm({ ...form, itinerary: items })}
+          />
           <In label="Sort order" type="number" value={String(form.sort_order)} onChange={(v) => setForm({ ...form, sort_order: Number(v) })} />
           <label className="flex items-center gap-2 self-end pb-2">
             <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} />
@@ -479,11 +507,158 @@ function In({ label, value, onChange, type = "text" }: { label: string; value: s
     </label>
   );
 }
-function JsonField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+
+function StringList({ label, items, onChange, placeholder }: { label: string; items: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
   return (
     <div className="sm:col-span-2">
       <Lbl>{label}</Lbl>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className={`${inputCls} font-mono text-xs`} />
+      <div className="space-y-2">
+        {items.map((val, i) => (
+          <div key={i} className="flex gap-2">
+            <input
+              value={val}
+              placeholder={placeholder}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = e.target.value;
+                onChange(next);
+              }}
+              className={inputCls}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+              className="shrink-0 p-2 rounded-md hover:bg-destructive/10 text-destructive"
+              aria-label="Remove"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, ""])}
+          className="inline-flex items-center gap-1.5 rounded-full border border-brand-green/30 px-3 py-1.5 text-xs font-semibold text-brand-green-deep hover:bg-brand-sand"
+        >
+          <Plus className="size-3.5" /> Add item
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ItineraryList({ items, onChange }: { items: { day: number; title: string; text: string }[]; onChange: (v: { day: number; title: string; text: string }[]) => void }) {
+  return (
+    <div className="sm:col-span-2">
+      <Lbl>Day-by-day itinerary</Lbl>
+      <div className="space-y-3">
+        {items.map((it, i) => (
+          <div key={i} className="rounded-xl border border-border p-3 bg-background">
+            <div className="flex gap-2 items-start">
+              <input
+                type="number"
+                value={it.day}
+                onChange={(e) => {
+                  const next = [...items]; next[i] = { ...it, day: Number(e.target.value) }; onChange(next);
+                }}
+                className={`${inputCls} w-20`}
+                aria-label="Day"
+              />
+              <input
+                value={it.title}
+                placeholder="Day title (e.g. Arrive Nairobi)"
+                onChange={(e) => { const next = [...items]; next[i] = { ...it, title: e.target.value }; onChange(next); }}
+                className={inputCls}
+              />
+              <button type="button" onClick={() => onChange(items.filter((_, idx) => idx !== i))} className="shrink-0 p-2 rounded-md hover:bg-destructive/10 text-destructive">
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+            <textarea
+              value={it.text}
+              placeholder="What happens this day…"
+              onChange={(e) => { const next = [...items]; next[i] = { ...it, text: e.target.value }; onChange(next); }}
+              rows={2}
+              className={`${inputCls} mt-2`}
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, { day: items.length + 1, title: "", text: "" }])}
+          className="inline-flex items-center gap-1.5 rounded-full border border-brand-green/30 px-3 py-1.5 text-xs font-semibold text-brand-green-deep hover:bg-brand-sand"
+        >
+          <Plus className="size-3.5" /> Add day
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChange: (url: string) => void; pathPrefix: string }) {
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function upload(file: File) {
+    setErr(null);
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${pathPrefix}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("tour-images").upload(path, file, {
+        cacheControl: "31536000",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data, error: sErr } = await supabase.storage
+        .from("tour-images")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (sErr || !data) throw sErr ?? new Error("Could not create URL");
+      onChange(data.signedUrl);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex items-start gap-4">
+        <div className="size-24 rounded-lg overflow-hidden bg-brand-sand grid place-items-center border border-border shrink-0">
+          {value ? (
+            <img src={value} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <ImageIcon className="size-6 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex-1 space-y-2">
+          <label className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-brand-green-deep cursor-pointer">
+            {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
+            {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) upload(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="…or paste an image URL"
+            className={`${inputCls} text-xs`}
+          />
+          {err && <p className="text-xs text-destructive">{err}</p>}
+          <p className="text-xs text-muted-foreground">Uploaded images appear at a consistent aspect ratio on the public site.</p>
+        </div>
+      </div>
     </div>
   );
 }
