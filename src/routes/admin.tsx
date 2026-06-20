@@ -657,7 +657,7 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
       <div className="flex items-start gap-4">
         <div className="size-24 rounded-lg overflow-hidden bg-brand-sand grid place-items-center border border-border shrink-0">
           {value ? (
-            <img src={value} alt="" className="w-full h-full object-cover" />
+            <img src={value} alt="Image preview" className="w-full h-full object-cover" />
           ) : (
             <ImageIcon className="size-6 text-muted-foreground" />
           )}
