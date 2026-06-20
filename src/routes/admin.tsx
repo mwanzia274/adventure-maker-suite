@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, LayoutDashboard, Mail, MapPinned, Star, Image as ImageIcon,
-  Plus, Pencil, Trash2, Loader2, Check, X as XIcon, ExternalLink, Database,
+  Plus, Pencil, Trash2, Loader2, Check, X as XIcon, ExternalLink, Database, Upload, Search,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
@@ -250,6 +250,7 @@ function ToursPanel() {
   const [seeding, setSeeding] = useState(false);
   const [editing, setEditing] = useState<TourRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [query, setQuery] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-tours"],
@@ -259,6 +260,16 @@ function ToursPanel() {
       return (data ?? []) as TourRow[];
     },
   });
+
+  const filtered = useMemo(() => {
+    const list = data ?? [];
+    if (!query.trim()) return list;
+    const q = query.toLowerCase();
+    return list.filter((t) =>
+      [t.title, t.slug, t.category, t.location, t.duration, t.price, t.short_desc]
+        .some((f) => (f ?? "").toLowerCase().includes(q))
+    );
+  }, [data, query]);
 
   async function runSeed() {
     setSeeding(true);
@@ -288,6 +299,15 @@ function ToursPanel() {
       subtitle="Manage every safari shown on the public site."
       action={
         <div className="flex flex-wrap gap-2">
+          <div className="relative">
+            <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tours by name, location…"
+              className="rounded-full border border-border bg-background pl-8 pr-3 py-2 text-xs w-64 focus:outline-none focus:border-brand-gold"
+            />
+          </div>
           {(data?.length ?? 0) === 0 && (
             <button onClick={runSeed} disabled={seeding} className="inline-flex items-center gap-2 rounded-full border border-brand-green/30 px-4 py-2 text-xs font-semibold text-brand-green-deep hover:bg-brand-sand transition disabled:opacity-60">
               {seeding ? <Loader2 className="size-3.5 animate-spin" /> : <Database className="size-3.5" />}
@@ -302,9 +322,11 @@ function ToursPanel() {
     >
       {isLoading ? <Loader2 className="size-5 animate-spin text-brand-green-deep" /> : (data?.length ?? 0) === 0 ? (
         <Empty text="No tours in the database yet. Click 'Seed default tours' to import the 17 existing safaris, or create a new one." />
+      ) : filtered.length === 0 ? (
+        <Empty text={`No tours match "${query}".`} />
       ) : (
         <div className="grid gap-3">
-          {data!.map((t) => (
+          {filtered.map((t) => (
             <div key={t.id} className="flex items-center gap-4 p-3 border border-border rounded-xl bg-background">
               {t.img && <img src={t.img} alt="" className="size-16 rounded-lg object-cover" />}
               <div className="flex-1 min-w-0">
