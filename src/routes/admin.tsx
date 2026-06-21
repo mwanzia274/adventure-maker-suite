@@ -249,8 +249,8 @@ function BookingsPanel() {
             </thead>
             <tbody>
               {filtered.map((b) => (
-                <>
-                <tr key={b.id} className="border-b border-border/70 align-top">
+                <React.Fragment key={b.id}>
+                <tr className="border-b border-border/70 align-top">
                   <td className="py-3 pr-4 font-mono text-xs">{b.reference}</td>
                   <td className="py-3 pr-4">
                     <div className="font-semibold text-brand-green-deep">{b.name}</div>
@@ -315,13 +315,13 @@ function BookingsPanel() {
                   </td>
                 </tr>
                 {openRow === b.id && (
-                  <tr key={b.id + "-log"} className="border-b border-border/70 bg-brand-sand/20">
+                  <tr className="border-b border-border/70 bg-brand-sand/20">
                     <td colSpan={6} className="p-4">
                       <ReplyHistory bookingId={b.id} bookingRef={b.reference} initialNotes={(b as { admin_notes?: string | null }).admin_notes ?? ""} />
                     </td>
                   </tr>
                 )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
