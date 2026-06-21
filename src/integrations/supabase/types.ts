@@ -14,8 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_replies: {
+        Row: {
+          admin_email: string | null
+          admin_id: string | null
+          booking_id: string
+          channel: string
+          created_at: string
+          id: string
+          message: string
+        }
+        Insert: {
+          admin_email?: string | null
+          admin_id?: string | null
+          booking_id: string
+          channel?: string
+          created_at?: string
+          id?: string
+          message: string
+        }
+        Update: {
+          admin_email?: string | null
+          admin_id?: string | null
+          booking_id?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_replies_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
+          admin_notes: string | null
           created_at: string
           email: string
           id: string
@@ -30,6 +69,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           email: string
           id?: string
@@ -44,6 +84,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           email?: string
           id?: string
