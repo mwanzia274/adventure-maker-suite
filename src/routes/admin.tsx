@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, LayoutDashboard, Mail, MapPinned, Star, Image as ImageIcon,
   Plus, Pencil, Trash2, Loader2, Check, X as XIcon, ExternalLink, Database, Upload, Search,
-  ArrowUp, ArrowDown, MessageCircle, Phone as PhoneIcon,
+  ArrowUp, ArrowDown, MessageCircle, Phone as PhoneIcon, Download, History, Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
@@ -155,7 +155,9 @@ function BookingsPanel() {
   }, [data]);
 
   async function setStatus(id: string, status: string) {
-    await supabase.from("bookings").update({ status }).eq("id", id);
+    const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
+    if (error) { toast.error("Could not update status", { description: error.message }); return; }
+    toast.success(`Status set to "${status}"`);
     qc.invalidateQueries({ queryKey: ["admin-bookings"] });
   }
   async function remove(id: string) {
@@ -164,17 +166,81 @@ function BookingsPanel() {
     qc.invalidateQueries({ queryKey: ["admin-bookings"] });
   }
 
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [openRow, setOpenRow] = useState<string | null>(null);
+
+  const filtered = useMemo(() => {
+    const list = data ?? [];
+    return list.filter((b) => {
+      if (statusFilter !== "all" && b.status !== statusFilter) return false;
+      if (!query.trim()) return true;
+      const q = query.toLowerCase();
+      return [b.reference, b.name, b.email, b.phone, b.trip, b.message]
+        .some((f) => (f ?? "").toString().toLowerCase().includes(q));
+    });
+  }, [data, query, statusFilter]);
+
+  function exportCsv() {
+    const rows = filtered;
+    if (!rows.length) { toast.error("Nothing to export"); return; }
+    const headers = ["reference","name","email","phone","trip","travel_date","travellers","status","message","admin_notes","created_at"];
+    const esc = (v: unknown) => {
+      const s = v == null ? "" : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => esc((r as Record<string, unknown>)[h])).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bookings-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} booking${rows.length === 1 ? "" : "s"}`);
+  }
+
   return (
-    <Panel title="Bookings & enquiries" subtitle="Every enquiry from the contact form lands here.">
+    <Panel
+      title="Bookings & enquiries"
+      subtitle="Every enquiry from the contact form lands here."
+      action={
+        <button onClick={exportCsv} className="inline-flex items-center gap-2 rounded-full border border-brand-green/30 px-4 py-2 text-xs font-semibold text-brand-green-deep hover:bg-brand-sand">
+          <Download className="size-3.5" /> Export CSV
+        </button>
+      }
+    >
       <div className="grid grid-cols-3 gap-4 mb-6">
         <Stat label="Total" value={counts.total} />
         <Stat label="New" value={counts.new} accent />
         <Stat label="Confirmed" value={counts.confirmed} />
       </div>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="relative">
+          <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search ref, name, email, trip…"
+            className="rounded-full border border-border bg-background pl-8 pr-3 py-2 text-xs w-72 focus:outline-none focus:border-brand-gold"
+          />
+        </div>
+        <div className="flex gap-1">
+          {(["all","new","contacted","confirmed","cancelled"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold border capitalize transition ${statusFilter === s ? "bg-brand-green-deep text-white border-brand-green-deep" : "bg-background text-muted-foreground border-border hover:border-brand-gold"}`}
+            >{s}</button>
+          ))}
+        </div>
+      </div>
       {isLoading ? (
         <Loader2 className="size-5 animate-spin text-brand-green-deep" />
       ) : (data?.length ?? 0) === 0 ? (
         <Empty text="No bookings yet. Submit the contact form to test." />
+      ) : filtered.length === 0 ? (
+        <Empty text="No bookings match the current filters." />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -182,8 +248,9 @@ function BookingsPanel() {
               <tr><th className="text-left py-2 pr-4">Ref</th><th className="text-left py-2 pr-4">Guest</th><th className="text-left py-2 pr-4">Trip</th><th className="text-left py-2 pr-4">Date</th><th className="text-left py-2 pr-4">Status</th><th className="py-2"></th></tr>
             </thead>
             <tbody>
-              {(data ?? []).map((b) => (
-                <tr key={b.id} className="border-b border-border/70 align-top">
+              {filtered.map((b) => (
+                <React.Fragment key={b.id}>
+                <tr className="border-b border-border/70 align-top">
                   <td className="py-3 pr-4 font-mono text-xs">{b.reference}</td>
                   <td className="py-3 pr-4">
                     <div className="font-semibold text-brand-green-deep">{b.name}</div>
@@ -216,6 +283,12 @@ function BookingsPanel() {
                           <PhoneIcon className="size-3" /> Call
                         </a>
                       )}
+                      <button
+                        onClick={() => setOpenRow(openRow === b.id ? null : b.id)}
+                        className="inline-flex items-center gap-1 rounded-full bg-brand-sand hover:bg-brand-sand/70 text-brand-green-deep px-2 py-0.5 text-[11px] font-semibold"
+                      >
+                        <History className="size-3" /> {openRow === b.id ? "Hide" : "Reply log"}
+                      </button>
                     </div>
                   </td>
                   <td className="py-3 pr-4">{b.trip || "—"}</td>
@@ -241,12 +314,123 @@ function BookingsPanel() {
                     <button onClick={() => remove(b.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="size-4" /></button>
                   </td>
                 </tr>
+                {openRow === b.id && (
+                  <tr className="border-b border-border/70 bg-brand-sand/20">
+                    <td colSpan={6} className="p-4">
+                      <ReplyHistory bookingId={b.id} bookingRef={b.reference} initialNotes={(b as { admin_notes?: string | null }).admin_notes ?? ""} />
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
         </div>
       )}
     </Panel>
+  );
+}
+
+function ReplyHistory({ bookingId, bookingRef, initialNotes }: { bookingId: string; bookingRef: string; initialNotes: string }) {
+  const qc = useQueryClient();
+  const [channel, setChannel] = useState("email");
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [notes, setNotes] = useState(initialNotes);
+  const [notesSaving, setNotesSaving] = useState(false);
+
+  const { data: replies, isLoading } = useQuery({
+    queryKey: ["booking-replies", bookingId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("booking_replies")
+        .select("*")
+        .eq("booking_id", bookingId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  async function logReply() {
+    if (!message.trim()) { toast.error("Write a reply first"); return; }
+    setSaving(true);
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase.from("booking_replies").insert({
+      booking_id: bookingId,
+      admin_id: u.user?.id ?? null,
+      admin_email: u.user?.email ?? null,
+      channel,
+      message: message.trim(),
+    });
+    setSaving(false);
+    if (error) { toast.error("Could not save reply", { description: error.message }); return; }
+    setMessage("");
+    toast.success(`Reply logged for ${bookingRef}`);
+    qc.invalidateQueries({ queryKey: ["booking-replies", bookingId] });
+  }
+
+  async function saveNotes() {
+    setNotesSaving(true);
+    const { error } = await supabase.from("bookings").update({ admin_notes: notes }).eq("id", bookingId);
+    setNotesSaving(false);
+    if (error) { toast.error("Could not save note", { description: error.message }); return; }
+    toast.success("Internal note saved");
+    qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-6">
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-brand-green-deep mb-2">Log a reply</div>
+        <div className="flex gap-2 mb-2">
+          {(["email","whatsapp","phone","other"] as const).map((c) => (
+            <button key={c} onClick={() => setChannel(c)} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border capitalize ${channel === c ? "bg-brand-green-deep text-white border-brand-green-deep" : "bg-background border-border text-muted-foreground"}`}>{c}</button>
+          ))}
+        </div>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+          placeholder="What did you tell the guest?"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-brand-gold"
+        />
+        <button onClick={logReply} disabled={saving} className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-brand-green px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-brand-green-deep disabled:opacity-60">
+          {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />} Save reply
+        </button>
+
+        <div className="text-xs font-semibold uppercase tracking-widest text-brand-green-deep mt-5 mb-2">Internal note</div>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          placeholder="Private notes (visible to admins only)"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-brand-gold"
+        />
+        <button onClick={saveNotes} disabled={notesSaving} className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-brand-green-deep hover:bg-brand-sand disabled:opacity-60">
+          {notesSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />} Save note
+        </button>
+      </div>
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-brand-green-deep mb-2">Reply history</div>
+        {isLoading ? <Loader2 className="size-4 animate-spin text-brand-green-deep" /> : (replies?.length ?? 0) === 0 ? (
+          <div className="text-xs text-muted-foreground italic">No replies logged yet.</div>
+        ) : (
+          <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            {replies!.map((r) => (
+              <li key={r.id} className="rounded-lg border border-border bg-background p-2.5">
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span className="font-semibold uppercase tracking-wider text-brand-green-deep">{r.channel}</span>
+                  <span>{new Date(r.created_at).toLocaleString()}</span>
+                </div>
+                <div className="text-sm mt-1 whitespace-pre-wrap">{r.message}</div>
+                {r.admin_email && <div className="text-[11px] text-muted-foreground mt-1">by {r.admin_email}</div>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }
 
