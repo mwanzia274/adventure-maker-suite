@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { z } from "zod";
 import { Phone, Mail, MapPin, Clock, Send, Check, Loader2, AlertCircle, MessageCircle } from "lucide-react";
 import { SiteLayout, PageHero } from "@/components/SiteLayout";
@@ -47,11 +47,24 @@ function ContactPage() {
   const [reference, setReference] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const captcha = useMemo(() => ({
+    a: Math.floor(Math.random() * 8) + 2,
+    b: Math.floor(Math.random() * 8) + 1,
+  }), [captchaNonce]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setCaptchaError(null);
     const fd = new FormData(e.currentTarget);
+    const captchaAnswer = Number(fd.get("captchaAnswer"));
+    if (!Number.isFinite(captchaAnswer) || captchaAnswer !== captcha.a + captcha.b) {
+      setCaptchaError(`Please answer: ${captcha.a} + ${captcha.b}`);
+      setStatus("idle");
+      return;
+    }
     const payload = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
@@ -61,6 +74,10 @@ function ContactPage() {
       people: String(fd.get("people") ?? ""),
       message: String(fd.get("message") ?? ""),
       safari: String(fd.get("safari") ?? ""),
+      website: String(fd.get("website") ?? ""),
+      captchaA: captcha.a,
+      captchaB: captcha.b,
+      captchaAnswer,
     };
     const parsed = enquirySchema.safeParse({
       name: payload.name, email: payload.email, phone: payload.phone, message: payload.message,
@@ -84,6 +101,7 @@ function ContactPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong — please try again or email us directly.");
       setStatus("error");
+      setCaptchaNonce((n) => n + 1);
     }
   }
 
@@ -179,6 +197,34 @@ function ContactPage() {
                   />
                   {fieldErrors.message && (
                     <p className="mt-1.5 text-xs text-destructive flex items-center gap-1"><AlertCircle className="size-3" /> {fieldErrors.message}</p>
+                  )}
+                </div>
+                {/* Honeypot — hidden from real users */}
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="hidden"
+                />
+                {/* Math captcha */}
+                <div className="rounded-lg border border-border bg-background/50 p-4">
+                  <label htmlFor="captchaAnswer" className="text-sm font-medium text-foreground">
+                    Quick check: what is <span className="font-mono text-brand-green-deep">{captcha.a} + {captcha.b}</span>?<span className="text-destructive"> *</span>
+                  </label>
+                  <input
+                    id="captchaAnswer"
+                    name="captchaAnswer"
+                    type="number"
+                    required
+                    inputMode="numeric"
+                    aria-invalid={!!captchaError}
+                    className={`mt-2 w-32 rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold ${captchaError ? "border-destructive" : "border-border"}`}
+                    placeholder="Answer"
+                  />
+                  {captchaError && (
+                    <p className="mt-1.5 text-xs text-destructive flex items-center gap-1"><AlertCircle className="size-3" /> {captchaError}</p>
                   )}
                 </div>
                 {status === "error" && error && (

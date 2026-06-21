@@ -5,11 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, LayoutDashboard, Mail, MapPinned, Star, Image as ImageIcon,
   Plus, Pencil, Trash2, Loader2, Check, X as XIcon, ExternalLink, Database, Upload, Search,
-  ArrowUp, ArrowDown,
+  ArrowUp, ArrowDown, MessageCircle, Phone as PhoneIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
 import logo from "@/assets/logo.asset.json";
+import { toast } from "sonner";
 
 type Tab = "bookings" | "tours" | "reviews" | "gallery";
 
@@ -190,6 +191,32 @@ function BookingsPanel() {
                     {b.phone && <div className="text-xs text-muted-foreground">{b.phone}</div>}
                     {b.travellers && <div className="text-xs text-muted-foreground mt-1">{b.travellers}</div>}
                     {b.message && <div className="text-xs text-muted-foreground mt-1 max-w-xs line-clamp-3">"{b.message}"</div>}
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <a
+                        href={`mailto:${b.email}?subject=${encodeURIComponent("Re: Your Pla2Ride safari enquiry " + b.reference)}&body=${encodeURIComponent("Hi " + b.name + ",\n\nThank you for reaching out to Pla2Ride Tours and Safaris.\n\n")}`}
+                        className="inline-flex items-center gap-1 rounded-full bg-brand-green/10 hover:bg-brand-green/20 text-brand-green-deep px-2 py-0.5 text-[11px] font-semibold"
+                      >
+                        <Mail className="size-3" /> Reply
+                      </a>
+                      {b.phone && (
+                        <a
+                          href={`https://wa.me/${b.phone.replace(/[^\d]/g, "")}?text=${encodeURIComponent("Hi " + b.name + ", thanks for your enquiry " + b.reference + " with Pla2Ride Tours and Safaris.")}`}
+                          target="_blank"
+                          rel="noopener"
+                          className="inline-flex items-center gap-1 rounded-full bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#128C7E] px-2 py-0.5 text-[11px] font-semibold"
+                        >
+                          <MessageCircle className="size-3" /> WhatsApp
+                        </a>
+                      )}
+                      {b.phone && (
+                        <a
+                          href={`tel:${b.phone.replace(/\s+/g, "")}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-muted hover:bg-muted/70 text-foreground px-2 py-0.5 text-[11px] font-semibold"
+                        >
+                          <PhoneIcon className="size-3" /> Call
+                        </a>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pr-4">{b.trip || "—"}</td>
                   <td className="py-3 pr-4 text-xs">{b.travel_date || "—"}<div className="text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</div></td>
@@ -304,10 +331,15 @@ function ToursPanel() {
     // If equal, force distinct values to enable a swap.
     const newA = a === b ? b + direction : b;
     const newB = a === b ? a : a;
-    await Promise.all([
+    const [r1, r2] = await Promise.all([
       supabase.from("tours").update({ sort_order: newA }).eq("id", t.id),
       supabase.from("tours").update({ sort_order: newB }).eq("id", other.id),
     ]);
+    if (r1.error || r2.error) {
+      toast.error("Could not reorder tours", { description: (r1.error ?? r2.error)?.message });
+      return;
+    }
+    toast.success(`Moved "${t.title}" ${direction === -1 ? "up" : "down"}`);
     qc.invalidateQueries({ queryKey: ["admin-tours"] });
     qc.invalidateQueries({ queryKey: ["public-tours"] });
   }
@@ -627,10 +659,22 @@ function ItineraryList({ items, onChange }: { items: { day: number; title: strin
 function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChange: (url: string) => void; pathPrefix: string }) {
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [dragOver, setDragOver] = useState(false);
+  const MAX_MB = 8;
 
   async function upload(file: File) {
     setErr(null);
+    if (!file.type.startsWith("image/")) {
+      setErr("Please choose an image file (JPG, PNG, WebP).");
+      return;
+    }
+    if (file.size > MAX_MB * 1024 * 1024) {
+      setErr(`Image is too large. Max ${MAX_MB}MB.`);
+      return;
+    }
     setUploading(true);
+    setProgress(20);
     try {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${pathPrefix}/${crypto.randomUUID()}.${ext}`;
@@ -640,21 +684,36 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
         contentType: file.type,
       });
       if (upErr) throw upErr;
+      setProgress(75);
       const { data, error: sErr } = await supabase.storage
         .from("tour-images")
         .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
       if (sErr || !data) throw sErr ?? new Error("Could not create URL");
       onChange(data.signedUrl);
+      setProgress(100);
+      toast.success("Image uploaded");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Upload failed");
+      toast.error("Upload failed");
     } finally {
       setUploading(false);
+      setTimeout(() => setProgress(0), 800);
     }
   }
 
   return (
     <div>
-      <div className="flex items-start gap-4">
+      <div
+        className={`flex items-start gap-4 rounded-xl border-2 border-dashed p-3 transition ${dragOver ? "border-brand-gold bg-brand-sand/40" : "border-transparent"}`}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const file = e.dataTransfer.files?.[0];
+          if (file) upload(file);
+        }}
+      >
         <div className="size-24 rounded-lg overflow-hidden bg-brand-sand grid place-items-center border border-border shrink-0">
           {value ? (
             <img src={value} alt="Image preview" className="w-full h-full object-cover" />
@@ -668,7 +727,7 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
             {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/avif"
               className="hidden"
               disabled={uploading}
               onChange={(e) => {
@@ -678,6 +737,20 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
               }}
             />
           </label>
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="ml-2 inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="size-3" /> Remove
+            </button>
+          )}
+          {uploading && (
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div className="h-full bg-brand-green transition-all" style={{ width: `${progress}%` }} />
+            </div>
+          )}
           <input
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -685,7 +758,7 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
             className={`${inputCls} text-xs`}
           />
           {err && <p className="text-xs text-destructive">{err}</p>}
-          <p className="text-xs text-muted-foreground">Uploaded images appear at a consistent aspect ratio on the public site.</p>
+          <p className="text-xs text-muted-foreground">Drag & drop or click to upload. JPG, PNG, WebP up to {MAX_MB}MB. Images appear at a consistent aspect ratio on the public site.</p>
         </div>
       </div>
     </div>

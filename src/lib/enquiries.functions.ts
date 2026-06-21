@@ -10,11 +10,23 @@ const enquirySchema = z.object({
   people: z.string().trim().max(40).optional().or(z.literal("")),
   message: z.string().trim().min(1, "Tell us a little about your trip").max(2000),
   safari: z.string().trim().max(120).optional().or(z.literal("")),
+  website: z.string().max(0, "Bot detected").optional().or(z.literal("")),
+  captchaA: z.number().int(),
+  captchaB: z.number().int(),
+  captchaAnswer: z.number().int(),
 });
 
 export const submitEnquiry = createServerFn({ method: "POST" })
   .inputValidator(enquirySchema)
   .handler(async ({ data }) => {
+    // Honeypot — silent reject
+    if (data.website && data.website.length > 0) {
+      throw new Error("Submission blocked.");
+    }
+    // Math captcha
+    if (data.captchaA + data.captchaB !== data.captchaAnswer) {
+      throw new Error("Captcha answer is incorrect. Please try again.");
+    }
     const ref = `PLA-${Date.now().toString(36).toUpperCase()}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let travelDate: string | null = null;
