@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, LayoutDashboard, Mail, MapPinned, Star, Image as ImageIcon,
   Plus, Pencil, Trash2, Loader2, Check, X as XIcon, ExternalLink, Database, Upload, Search,
-  ArrowUp, ArrowDown, MessageCircle, Phone as PhoneIcon,
+  ArrowUp, ArrowDown, MessageCircle, Phone as PhoneIcon, Download, History, Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
