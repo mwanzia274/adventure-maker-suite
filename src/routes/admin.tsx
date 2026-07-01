@@ -958,6 +958,94 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
 }
 
 // ============ REVIEWS ============
+function MultiImageUploader({ values, onChange, pathPrefix }: { values: string[]; onChange: (v: string[]) => void; pathPrefix: string }) {
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const MAX_MB = 8;
+
+  async function uploadFiles(files: FileList | File[]) {
+    setErr(null);
+    const arr = Array.from(files);
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of arr) {
+        if (!file.type.startsWith("image/")) { setErr(`Skipped ${file.name}: not an image.`); continue; }
+        if (file.size > MAX_MB * 1024 * 1024) { setErr(`Skipped ${file.name}: over ${MAX_MB}MB.`); continue; }
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${pathPrefix}/${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("tour-images").upload(path, file, {
+          cacheControl: "31536000", upsert: false, contentType: file.type,
+        });
+        if (upErr) { setErr(upErr.message); continue; }
+        const { data, error: sErr } = await supabase.storage
+          .from("tour-images").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+        if (sErr || !data) { setErr(sErr?.message ?? "Could not sign URL"); continue; }
+        uploaded.push(data.signedUrl);
+      }
+      if (uploaded.length) {
+        onChange([...values, ...uploaded]);
+        toast.success(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} added`);
+      }
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function move(idx: number, dir: -1 | 1) {
+    const j = idx + dir;
+    if (j < 0 || j >= values.length) return;
+    const next = [...values];
+    [next[idx], next[j]] = [next[j], next[idx]];
+    onChange(next);
+  }
+
+  return (
+    <div>
+      <div
+        className={`rounded-xl border-2 border-dashed p-4 transition ${dragOver ? "border-brand-gold bg-brand-sand/40" : "border-border"}`}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files); }}
+      >
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-brand-green-deep cursor-pointer">
+            {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
+            {uploading ? "Uploading…" : "Add gallery images"}
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ""; }}
+            />
+          </label>
+          <span className="text-xs text-muted-foreground">Drag & drop multiple images. JPG, PNG, WebP up to {MAX_MB}MB each.</span>
+        </div>
+        {err && <p className="mt-2 text-xs text-destructive">{err}</p>}
+        {values.length > 0 && (
+          <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {values.map((url, i) => (
+              <div key={i} className="relative group rounded-lg overflow-hidden border border-border bg-brand-sand aspect-square">
+                <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-end justify-between p-1.5 opacity-0 group-hover:opacity-100">
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => move(i, -1)} className="p-1 rounded bg-white/90 text-brand-green-deep" title="Move left"><ArrowUp className="size-3 rotate-[-90deg]" /></button>
+                    <button type="button" onClick={() => move(i, 1)} className="p-1 rounded bg-white/90 text-brand-green-deep" title="Move right"><ArrowDown className="size-3 rotate-[-90deg]" /></button>
+                  </div>
+                  <button type="button" onClick={() => onChange(values.filter((_, idx) => idx !== i))} className="p-1 rounded bg-destructive text-white" title="Remove"><Trash2 className="size-3" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ReviewsPanel() {
   const qc = useQueryClient();
   const [adding, setAdding] = useState(false);
