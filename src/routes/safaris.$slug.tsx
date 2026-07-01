@@ -155,6 +155,20 @@ function SafariDetailPage() {
                 </ul>
               </div>
             </div>
+
+            {safari.gallery && safari.gallery.length > 0 && (
+              <div>
+                <div className="text-xs font-semibold tracking-[0.3em] text-brand-gold uppercase">Gallery</div>
+                <h2 className="mt-3 font-display text-3xl font-semibold text-brand-green-deep">Moments from this trip</h2>
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {safari.gallery.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="group relative aspect-square overflow-hidden rounded-xl bg-brand-sand border border-border">
+                      <img src={url} alt={`${safari.title} photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <aside className="lg:col-span-1">

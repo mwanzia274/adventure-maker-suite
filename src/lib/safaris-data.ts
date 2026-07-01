@@ -23,6 +23,7 @@ export type Safari = {
   includes: string[];
   excludes: string[];
   itinerary: { day: string; title: string; text: string }[];
+  gallery?: string[];
 };
 
 export const safaris: Safari[] = [
