@@ -13,6 +13,7 @@ export type DbTour = {
   location: string;
   price: string;
   img: string | null;
+  gallery: string[] | null;
   short_desc: string;
   long_desc: string;
   highlights: string[];
@@ -34,6 +35,7 @@ export function dbToSafari(t: DbTour): Safari {
     location: t.location,
     price: t.price,
     img: t.img ?? "",
+    gallery: Array.isArray(t.gallery) ? t.gallery.filter((x): x is string => typeof x === "string") : [],
     desc: t.short_desc,
     long: t.long_desc,
     highlights: t.highlights ?? [],
