@@ -200,6 +200,7 @@ export type Database = {
           days: number
           duration: string
           excludes: Json
+          gallery: Json
           group_size: string
           highlights: Json
           id: string
@@ -222,6 +223,7 @@ export type Database = {
           days?: number
           duration: string
           excludes?: Json
+          gallery?: Json
           group_size?: string
           highlights?: Json
           id?: string
@@ -244,6 +246,7 @@ export type Database = {
           days?: number
           duration?: string
           excludes?: Json
+          gallery?: Json
           group_size?: string
           highlights?: Json
           id?: string
