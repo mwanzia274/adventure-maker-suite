@@ -634,6 +634,9 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
     location: tour?.location ?? "Kenya",
     price: tour?.price ?? "from $0",
     img: tour?.img ?? "",
+    gallery: Array.isArray((tour as unknown as { gallery?: unknown })?.gallery)
+      ? ((tour as unknown as { gallery: unknown[] }).gallery.filter((x): x is string => typeof x === "string"))
+      : [],
     short_desc: tour?.short_desc ?? "",
     long_desc: tour?.long_desc ?? "",
     highlights: asStringArray(tour?.highlights),
@@ -656,7 +659,8 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
       const itinerary = form.itinerary
         .map((it, i) => ({ day: Number(it.day) || i + 1, title: it.title.trim(), text: it.text.trim() }))
         .filter((it) => it.title || it.text);
-      const payload = { ...form, days: Number(form.days), sort_order: Number(form.sort_order), highlights, includes, excludes, itinerary };
+      const gallery = form.gallery.map((s) => s.trim()).filter(Boolean);
+      const payload = { ...form, days: Number(form.days), sort_order: Number(form.sort_order), highlights, includes, excludes, itinerary, gallery };
       if (isEdit && tour) {
         const { error } = await supabase.from("tours").update(payload).eq("id", tour.id);
         if (error) throw error;
@@ -691,6 +695,10 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
           <div className="sm:col-span-2">
             <Lbl>Cover image</Lbl>
             <ImageUploader value={form.img} onChange={(v) => setForm({ ...form, img: v })} pathPrefix="tours" />
+          </div>
+          <div className="sm:col-span-2">
+            <Lbl>Gallery images (shown on the tour page)</Lbl>
+            <MultiImageUploader values={form.gallery} onChange={(v) => setForm({ ...form, gallery: v })} pathPrefix="tours/gallery" />
           </div>
           <div className="sm:col-span-2">
             <Lbl>Short description</Lbl>
