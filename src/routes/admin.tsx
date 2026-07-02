@@ -653,6 +653,10 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
     setErr(null);
     setSaving(true);
     try {
+      const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const rawSlug = form.slug.trim() ? form.slug : form.title;
+      const slug = slugify(rawSlug);
+      if (!slug) { setErr("Please enter a title so we can build the URL slug."); setSaving(false); return; }
       const highlights = form.highlights.map((s) => s.trim()).filter(Boolean);
       const includes = form.includes.map((s) => s.trim()).filter(Boolean);
       const excludes = form.excludes.map((s) => s.trim()).filter(Boolean);
@@ -660,7 +664,7 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
         .map((it, i) => ({ day: Number(it.day) || i + 1, title: it.title.trim(), text: it.text.trim() }))
         .filter((it) => it.title || it.text);
       const gallery = form.gallery.map((s) => s.trim()).filter(Boolean);
-      const payload = { ...form, days: Number(form.days), sort_order: Number(form.sort_order), highlights, includes, excludes, itinerary, gallery };
+      const payload = { ...form, slug, days: Number(form.days), sort_order: Number(form.sort_order), highlights, includes, excludes, itinerary, gallery };
       if (isEdit && tour) {
         const { error } = await supabase.from("tours").update(payload).eq("id", tour.id);
         if (error) throw error;
