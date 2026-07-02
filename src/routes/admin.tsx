@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
+import { resolveImageUrl } from "@/lib/asset-resolver";
 import logo from "@/assets/logo.asset.json";
 import { toast } from "sonner";
 
