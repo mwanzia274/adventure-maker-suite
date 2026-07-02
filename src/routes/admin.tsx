@@ -564,7 +564,7 @@ function ToursPanel() {
         <div className="grid gap-3">
           {filtered.map((t, i) => (
             <div key={t.id} className="flex items-center gap-4 p-3 border border-border rounded-xl bg-background">
-              {t.img && <img src={t.img} alt={t.title} className="size-16 rounded-lg object-cover" />}
+              <TourThumb src={t.img} alt={t.title} />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-brand-green-deep">{t.title}</span>
