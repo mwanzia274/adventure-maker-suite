@@ -448,6 +448,27 @@ function Empty({ text }: { text: string }) {
   return <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border rounded-xl">{text}</div>;
 }
 
+function TourThumb({ src, alt, className }: { src: string | null | undefined; alt: string; className?: string }) {
+  const resolved = resolveImageUrl(src ?? "");
+  const [errored, setErrored] = useState(false);
+  const wrap = className ?? "size-16 rounded-lg";
+  if (!resolved || errored) {
+    return (
+      <div className={`${wrap} bg-brand-sand border border-dashed border-border grid place-items-center text-[10px] font-semibold text-muted-foreground text-center px-1`} title={resolved || "No image"}>
+        {resolved ? "Image failed" : "No image"}
+      </div>
+    );
+  }
+  return (
+    <img
+      src={resolved}
+      alt={alt}
+      className={`${wrap} object-cover`}
+      onError={() => setErrored(true)}
+    />
+  );
+}
+
 // ============ TOURS ============
 type TourRow = {
   id: string; slug: string; title: string; duration: string; days: number;
