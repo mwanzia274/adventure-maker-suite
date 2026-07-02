@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { safaris, type Safari } from "./safaris-data";
+import { resolveImageUrl, resolveImageUrls } from "./asset-resolver";
 
 export type DbTour = {
   id: string;
@@ -34,8 +35,10 @@ export function dbToSafari(t: DbTour): Safari {
     group: t.group_size,
     location: t.location,
     price: t.price,
-    img: t.img ?? "",
-    gallery: Array.isArray(t.gallery) ? t.gallery.filter((x): x is string => typeof x === "string") : [],
+    img: resolveImageUrl(t.img),
+    gallery: resolveImageUrls(
+      Array.isArray(t.gallery) ? t.gallery.filter((x): x is string => typeof x === "string") : [],
+    ),
     desc: t.short_desc,
     long: t.long_desc,
     highlights: t.highlights ?? [],
