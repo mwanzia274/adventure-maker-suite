@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { seedToursIfEmpty } from "@/lib/tours.functions";
+import { resolveImageUrl } from "@/lib/asset-resolver";
 import logo from "@/assets/logo.asset.json";
 import { toast } from "sonner";
 
@@ -447,6 +448,27 @@ function Empty({ text }: { text: string }) {
   return <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border rounded-xl">{text}</div>;
 }
 
+function TourThumb({ src, alt, className }: { src: string | null | undefined; alt: string; className?: string }) {
+  const resolved = resolveImageUrl(src ?? "");
+  const [errored, setErrored] = useState(false);
+  const wrap = className ?? "size-16 rounded-lg";
+  if (!resolved || errored) {
+    return (
+      <div className={`${wrap} bg-brand-sand border border-dashed border-border grid place-items-center text-[10px] font-semibold text-muted-foreground text-center px-1`} title={resolved || "No image"}>
+        {resolved ? "Image failed" : "No image"}
+      </div>
+    );
+  }
+  return (
+    <img
+      src={resolved}
+      alt={alt}
+      className={`${wrap} object-cover`}
+      onError={() => setErrored(true)}
+    />
+  );
+}
+
 // ============ TOURS ============
 type TourRow = {
   id: string; slug: string; title: string; duration: string; days: number;
@@ -563,7 +585,7 @@ function ToursPanel() {
         <div className="grid gap-3">
           {filtered.map((t, i) => (
             <div key={t.id} className="flex items-center gap-4 p-3 border border-border rounded-xl bg-background">
-              {t.img && <img src={t.img} alt={t.title} className="size-16 rounded-lg object-cover" />}
+              <TourThumb src={t.img} alt={t.title} />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-brand-green-deep">{t.title}</span>
@@ -648,6 +670,7 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
   }));
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   async function save() {
     setErr(null);
@@ -742,11 +765,46 @@ function TourEditor({ tour, onClose, onSaved }: { tour: TourRow | null; onClose:
         </div>
         {err && <div className="mt-4 text-sm text-destructive">{err}</div>}
         <div className="mt-6 flex justify-end gap-2">
+          <button type="button" onClick={() => setShowPreview((v) => !v)} className="rounded-full border border-border px-4 py-2 text-sm">
+            {showPreview ? "Hide preview" : "Preview itinerary"}
+          </button>
           <button onClick={onClose} className="rounded-full border border-border px-4 py-2 text-sm">Cancel</button>
           <button onClick={save} disabled={saving} className="rounded-full bg-brand-green px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-brand-green-deep transition disabled:opacity-60">
             {saving ? "Saving…" : "Save tour"}
           </button>
         </div>
+        {showPreview && (
+          <div className="mt-6 rounded-xl border border-border bg-brand-sand/40 p-5">
+            <div className="text-xs font-semibold tracking-[0.3em] uppercase text-brand-gold">Preview</div>
+            <h4 className="mt-2 font-display text-2xl font-semibold text-brand-green-deep">{form.title || "Untitled tour"}</h4>
+            <div className="mt-1 text-xs text-muted-foreground">{form.duration} · {form.location} · {form.price}</div>
+            {form.short_desc && <p className="mt-3 text-sm">{form.short_desc}</p>}
+            {form.itinerary.length === 0 ? (
+              <p className="mt-4 text-xs italic text-muted-foreground">No itinerary days added yet.</p>
+            ) : (
+              <ol className="mt-5 space-y-4 border-l-2 border-brand-gold/40 pl-5">
+                {form.itinerary.map((d, i) => (
+                  <li key={i} className="relative">
+                    <span className="absolute -left-[27px] top-1.5 size-3 rounded-full bg-brand-gold border-2 border-background" />
+                    <div className="text-[10px] font-bold tracking-widest text-brand-gold uppercase">Day {d.day || i + 1}</div>
+                    <div className="mt-0.5 font-display text-base font-semibold text-brand-green-deep">{d.title || <span className="italic text-muted-foreground">Untitled day</span>}</div>
+                    {d.text && <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{d.text}</p>}
+                  </li>
+                ))}
+              </ol>
+            )}
+            {form.gallery.length > 0 && (
+              <div className="mt-5">
+                <div className="text-xs font-semibold uppercase tracking-widest text-brand-green-deep mb-2">Gallery ({form.gallery.length})</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {form.gallery.map((url, i) => (
+                    <TourThumb key={i} src={url} alt={`Gallery ${i + 1}`} className="aspect-square w-full rounded-md" />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -912,7 +970,7 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
       >
         <div className="size-24 rounded-lg overflow-hidden bg-brand-sand grid place-items-center border border-border shrink-0">
           {value ? (
-            <img src={value} alt="Image preview" className="w-full h-full object-cover" />
+            <TourThumb src={value} alt="Image preview" className="w-full h-full" />
           ) : (
             <ImageIcon className="size-6 text-muted-foreground" />
           )}
