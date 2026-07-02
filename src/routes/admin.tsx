@@ -913,7 +913,7 @@ function ImageUploader({ value, onChange, pathPrefix }: { value: string; onChang
       >
         <div className="size-24 rounded-lg overflow-hidden bg-brand-sand grid place-items-center border border-border shrink-0">
           {value ? (
-            <img src={value} alt="Image preview" className="w-full h-full object-cover" />
+            <TourThumb src={value} alt="Image preview" className="w-full h-full" />
           ) : (
             <ImageIcon className="size-6 text-muted-foreground" />
           )}
